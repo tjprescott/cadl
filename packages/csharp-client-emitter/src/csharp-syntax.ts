@@ -1,15 +1,16 @@
 export enum SyntaxKind {
-  CSharpDocument,
-  Namespace,
-  Using,
-  Class,
-  ClassProperty,
-  TypeReference,
-  StringLiteral,
-  NumericLiteral,
-  BooleanLiteral,
   Attribute,
   AttributeFunc,
+  BooleanLiteral,
+  Class,
+  ClassProperty,
+  Comment,
+  CSharpDocument,
+  Namespace,
+  NumericLiteral,
+  StringLiteral,
+  TypeReference,
+  Using,
 }
 
 export type Node =
@@ -27,14 +28,24 @@ export type Expression = StringLiteralNode | NumericLiteralNode | BooleanLiteral
 
 export type StatementNode = NamespaceNode | ClassNode;
 
-export interface NodeBase {}
+export interface NodeBase {
+  comments?: Comment[];
+}
 
 export interface Attributable {
   attributes?: AttributeNode[];
 }
 
-export interface CSharpDocument extends NodeBase {
+export interface Comment extends NodeBase {
+  kind: SyntaxKind.Comment;
+  leading: boolean;
+  trailing: boolean;
+  value: string;
+}
+
+export interface CSharpDocument {
   kind: SyntaxKind.CSharpDocument;
+  headerComments?: Comment[];
   statements: StatementNode[];
   usings?: UsingNode[];
 }

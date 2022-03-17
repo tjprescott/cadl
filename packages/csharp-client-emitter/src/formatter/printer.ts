@@ -6,6 +6,7 @@ import {
   BooleanLiteralNode,
   ClassNode,
   ClassPropertyNode,
+  Comment,
   CSharpDocument,
   NamespaceNode,
   Node,
@@ -26,6 +27,8 @@ type PrettierChildPrint = (path: AstPath<Node>, index?: number) => Doc;
 
 export const csharpPrinter: Printer<Node> = {
   print: printCSharp,
+  printComment,
+  canAttachComment,
 };
 
 export function printCSharp(
@@ -76,6 +79,7 @@ function printCSharpDocument(
   print: PrettierChildPrint
 ) {
   return [
+    printDanglingComments(path, options, { sameIndent: true, key: "headerComments" }),
     printUsings(path, options, print),
     printStatementSequence(path, options, print, "statements"),
   ];
@@ -244,4 +248,100 @@ function printUsing(path: AstPath<UsingNode>, options: Options, print: PrettierC
   const node = path.getValue();
 
   return ["using ", node.name, ";"];
+}
+
+export function canAttachComment(node: Node): boolean {
+  const kind = node.kind as SyntaxKind;
+  return Boolean(kind && kind !== SyntaxKind.Comment);
+}
+
+function printComment(commentPath: AstPath<Node | Comment>, options: Options): Doc {
+  const comment = commentPath.getValue();
+  if (comment.kind !== SyntaxKind.Comment) {
+    throw new Error(`Node ${SyntaxKind[comment.kind]} is not a comment.`);
+  }
+  (comment as any).printed = true;
+  if (comment.value.startsWith("///")) {
+    return printXmlComment(comment.value);
+  } else if (comment.value.startsWith("//")) {
+    return comment.value.trimRight();
+  } else {
+    return printBlockComment(comment.value);
+  }
+}
+
+function printBlockComment(rawComment: string) {
+  if (isIndentableBlockComment(rawComment)) {
+    const printed = printIndentableBlockComment(rawComment);
+    return printed;
+  }
+
+  return ["/*", rawComment, "*/"];
+}
+
+function isIndentableBlockComment(rawComment: string): boolean {
+  // If the comment has multiple lines and every line starts with a star
+  // we can fix the indentation of each line. The stars in the `/*` and
+  // `*/` delimiters are not included in the comment value, so add them
+  // back first.
+  const lines = `*${rawComment}*`.split("\n");
+  return lines.length > 1 && lines.every((line) => line.trim()[0] === "*");
+}
+
+function printIndentableBlockComment(rawComment: string): Doc {
+  const lines = rawComment.split("\n");
+
+  return [
+    "/*",
+    join(
+      hardline,
+      lines.map((line, index) =>
+        index === 0
+          ? line.trimEnd()
+          : " " + (index < lines.length - 1 ? line.trim() : line.trimStart())
+      )
+    ),
+    "*/",
+  ];
+}
+
+function printXmlComment(rawComment: string) {
+  const lines = rawComment.split("\n");
+
+  return [
+    join(
+      hardline,
+      lines.map((line, index) =>
+        index === 0 ? line.trimEnd() : index < lines.length - 1 ? line.trim() : line.trimStart()
+      )
+    ),
+  ];
+}
+
+function printDanglingComments(
+  path: AstPath<any>,
+  options: Options,
+  { sameIndent, key }: { sameIndent: boolean; key?: string }
+) {
+  const node = path.getValue();
+  const parts: prettier.Doc[] = [];
+  key ??= "comments";
+  if (!node || !node[key]) {
+    return "";
+  }
+  path.each((commentPath) => {
+    const comment = commentPath.getValue();
+    if (!comment.leading && !comment.trailing) {
+      parts.push(printComment(path, options));
+    }
+  }, key);
+
+  if (parts.length === 0) {
+    return "";
+  }
+
+  if (sameIndent) {
+    return [join(hardline, parts), hardline];
+  }
+  return [indent([hardline, join(hardline, parts)]), hardline];
 }

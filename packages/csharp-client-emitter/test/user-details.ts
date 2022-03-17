@@ -2,6 +2,16 @@ import { CSharpDocument, SyntaxKind } from "../src/csharp-syntax.js";
 
 export const userDetails: CSharpDocument = {
   kind: SyntaxKind.CSharpDocument,
+  headerComments: [
+    {
+      kind: SyntaxKind.Comment,
+      leading: false,
+      trailing: false,
+      value: `//-----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//-----------------------------------------------------------------------------`,
+    },
+  ],
   usings: [
     {
       kind: SyntaxKind.Using,
@@ -21,6 +31,16 @@ export const userDetails: CSharpDocument = {
           kind: SyntaxKind.Class,
           id: "UserDetails",
           visibility: "public",
+          comments: [
+            {
+              kind: SyntaxKind.Comment,
+              leading: true,
+              trailing: false,
+              value: `/// <summary>
+/// Details of the subscriber.
+/// </summary>`,
+            },
+          ],
           body: [
             {
               kind: SyntaxKind.ClassProperty,
@@ -39,6 +59,16 @@ export const userDetails: CSharpDocument = {
                       arguments: [{ kind: SyntaxKind.NumericLiteral, value: "50" }],
                     },
                   ],
+                },
+              ],
+              comments: [
+                {
+                  kind: SyntaxKind.Comment,
+                  leading: true,
+                  trailing: false,
+                  value: `/// <summary>
+/// Subscriber first name.
+/// </summary>`,
                 },
               ],
             },
@@ -61,6 +91,16 @@ export const userDetails: CSharpDocument = {
                   ],
                 },
               ],
+              comments: [
+                {
+                  kind: SyntaxKind.Comment,
+                  leading: true,
+                  trailing: false,
+                  value: `/// <summary>
+/// Subscriber last name.
+/// </summary>`,
+                },
+              ],
             },
             {
               kind: SyntaxKind.ClassProperty,
@@ -79,6 +119,16 @@ export const userDetails: CSharpDocument = {
                       arguments: [{ kind: SyntaxKind.StringLiteral, value: "\\w+\\@\\w+\\.\\w+" }],
                     },
                   ],
+                },
+              ],
+              comments: [
+                {
+                  kind: SyntaxKind.Comment,
+                  leading: true,
+                  trailing: false,
+                  value: `/// <summary>
+/// Subscriber email address.
+/// </summary>`,
                 },
               ],
             },
