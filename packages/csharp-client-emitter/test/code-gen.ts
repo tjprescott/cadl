@@ -8,7 +8,7 @@ const csTypes = {
   string: { kind: SyntaxKind.TypeReference, id: "string" },
 } as const;
 
-const ast: CSharpDocument = {
+const ast2: CSharpDocument = {
   kind: SyntaxKind.CSharpDocument,
   statements: [
     {
@@ -37,6 +37,78 @@ const ast: CSharpDocument = {
   ],
 };
 
+const ast: CSharpDocument = {
+  kind: SyntaxKind.CSharpDocument,
+  statements: [
+    {
+      kind: SyntaxKind.Class,
+      id: "UserDetails",
+      visibility: "public",
+      body: [
+        {
+          kind: SyntaxKind.ClassProperty,
+          type: csTypes.string,
+          visibility: "public",
+          id: "FirstName",
+          get: true,
+          set: true,
+          attributes: [
+            {
+              kind: SyntaxKind.Attribute,
+              funcs: [
+                {
+                  kind: SyntaxKind.AttributeFunc,
+                  name: "Length",
+                  arguments: [{ kind: SyntaxKind.NumericLiteral, value: "50" }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          kind: SyntaxKind.ClassProperty,
+          type: csTypes.string,
+          visibility: "public",
+          id: "LastName",
+          get: true,
+          set: true,
+          attributes: [
+            {
+              kind: SyntaxKind.Attribute,
+              funcs: [
+                {
+                  kind: SyntaxKind.AttributeFunc,
+                  name: "Length",
+                  arguments: [{ kind: SyntaxKind.NumericLiteral, value: "50" }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          kind: SyntaxKind.ClassProperty,
+          type: csTypes.string,
+          visibility: "public",
+          id: "EmailAddress",
+          get: true,
+          set: true,
+          attributes: [
+            {
+              kind: SyntaxKind.Attribute,
+              funcs: [
+                {
+                  kind: SyntaxKind.AttributeFunc,
+                  name: "Pattern",
+                  arguments: [{ kind: SyntaxKind.StringLiteral, value: "\\w+\\@\\w+\\.\\w+" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 export const languages: SupportLanguage[] = [
   {
     name: "CSharp",

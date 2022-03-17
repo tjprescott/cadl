@@ -1,5 +1,9 @@
-public class Foo
+public class UserDetails
 {
-    public string Prop1 { get; }
-    public string? Prop2 { get; set; } = "my-default";
+    [Length(50)]
+    public string FirstName { get; set; }
+    [Length(50)]
+    public string LastName { get; set; }
+    [Pattern("\w+\@\w+\.\w+")]
+    public string EmailAddress { get; set; }
 }

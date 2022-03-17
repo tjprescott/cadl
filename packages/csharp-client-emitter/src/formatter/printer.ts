@@ -1,5 +1,9 @@
 import prettier, { AstPath, Doc, Options, Printer } from "prettier";
 import {
+  Attributable,
+  AttributeFuncNode,
+  AttributeNode,
+  BooleanLiteralNode,
   ClassNode,
   ClassPropertyNode,
   CSharpDocument,
@@ -9,6 +13,7 @@ import {
   SyntaxKind,
   TypeReferenceNode,
 } from "../csharp-syntax.js";
+import { printCommaList } from "./helper.js";
 
 const { align, breakParent, group, hardline, ifBreak, indent, join, line, softline } =
   prettier.doc.builders;
@@ -44,10 +49,16 @@ function printNode(path: AstPath<Node>, options: Options, print: PrettierChildPr
       return printClass(path as AstPath<ClassNode>, options, print);
     case SyntaxKind.ClassProperty:
       return printClassProperty(path as AstPath<ClassPropertyNode>, options, print);
+    case SyntaxKind.Attribute:
+      return printAttribute(path as AstPath<AttributeNode>, options, print);
+    case SyntaxKind.AttributeFunc:
+      return printAttributeFunc(path as AstPath<AttributeFuncNode>, options, print);
     case SyntaxKind.StringLiteral:
       return printStringLiteral(path as AstPath<StringLiteralNode>, options, print);
     case SyntaxKind.NumericLiteral:
       return printNumericLiteral(path as AstPath<NumericLiteralNode>, options, print);
+    case SyntaxKind.BooleanLiteral:
+      return printBooleanLiteral(path as AstPath<BooleanLiteralNode>, options, print);
     default:
       throw new Error(`Cannot print node type: ${(node as any).kind}`);
   }
@@ -94,9 +105,10 @@ function printTypeReference(
 
 function printClass(path: AstPath<ClassNode>, options: Options, print: PrettierChildPrint) {
   const node = path.getValue();
+  const attributes = printAttributeList(path, options, print);
   const visibility = node.visibility ? `${node.visibility} ` : "";
   const body = indent([hardline, printStatementSequence(path, options, print, "body")]);
-  return [visibility, "class ", node.id, hardline, "{", body, hardline, "}"];
+  return [attributes, visibility, "class ", node.id, hardline, "{", body, hardline, "}"];
 }
 
 function printClassProperty(
@@ -106,11 +118,50 @@ function printClassProperty(
 ) {
   const node = path.getValue();
   const type = path.call(print, "type");
+  const attributes = printAttributeList(path, options, print);
+
   const visibility = node.visibility ? `${node.visibility} ` : "";
   const get = node.get ? "get; " : "";
   const set = node.set ? "set; " : "";
   const defaultValue = node.default ? [" = ", path.call(print, "default"), ";"] : "";
-  return [visibility, type, " ", node.id, " {", " ", get, set, "}", defaultValue];
+  return [attributes, visibility, type, " ", node.id, " {", " ", get, set, "}", defaultValue];
+}
+
+function printAttributeList(
+  path: AstPath<Node & Attributable>,
+  options: Options,
+  print: PrettierChildPrint
+): Doc {
+  const node = path.getValue();
+  if (node.attributes === undefined) {
+    return "";
+  }
+  return path.map((x) => [print(x), hardline], "attributes");
+}
+
+function printAttribute(path: AstPath<AttributeNode>, options: Options, print: PrettierChildPrint) {
+  const node = path.getValue();
+
+  const target = node.target ? `${node.target} : ` : "";
+  const content = path.map(print, "funcs");
+  return group(["[", indent([softline, target, content]), softline, "]"]);
+}
+
+function printAttributeFunc(
+  path: AstPath<AttributeFuncNode>,
+  options: Options,
+  print: PrettierChildPrint
+) {
+  const node = path.getValue();
+
+  const docs: Doc[] = [node.name];
+
+  if (node.arguments && node.arguments.length > 0) {
+    docs.push("(");
+    docs.push(indent([softline, printCommaList(path.map(print, "arguments"))]));
+    docs.push(")");
+  }
+  return group(docs);
 }
 
 function printStringLiteral(
@@ -124,6 +175,15 @@ function printStringLiteral(
 
 function printNumericLiteral(
   path: AstPath<NumericLiteralNode>,
+  options: Options,
+  print: PrettierChildPrint
+) {
+  const node = path.getValue();
+  return node.value;
+}
+
+function printBooleanLiteral(
+  path: AstPath<BooleanLiteralNode>,
   options: Options,
   print: PrettierChildPrint
 ) {
