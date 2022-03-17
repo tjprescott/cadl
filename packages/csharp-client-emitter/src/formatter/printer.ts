@@ -7,11 +7,13 @@ import {
   ClassNode,
   ClassPropertyNode,
   CSharpDocument,
+  NamespaceNode,
   Node,
   NumericLiteralNode,
   StringLiteralNode,
   SyntaxKind,
   TypeReferenceNode,
+  UsingNode,
 } from "../csharp-syntax.js";
 import { printCommaList } from "./helper.js";
 
@@ -45,6 +47,10 @@ function printNode(path: AstPath<Node>, options: Options, print: PrettierChildPr
       return printCSharpDocument(path as AstPath<CSharpDocument>, options, print);
     case SyntaxKind.TypeReference:
       return printTypeReference(path as AstPath<TypeReferenceNode>, options, print);
+    case SyntaxKind.Namespace:
+      return printNamespace(path as AstPath<NamespaceNode>, options, print);
+    case SyntaxKind.Using:
+      return printUsing(path as AstPath<UsingNode>, options, print);
     case SyntaxKind.Class:
       return printClass(path as AstPath<ClassNode>, options, print);
     case SyntaxKind.ClassProperty:
@@ -69,14 +75,18 @@ function printCSharpDocument(
   options: Options,
   print: PrettierChildPrint
 ) {
-  return printStatementSequence(path, options, print, "statements");
+  return [
+    printUsings(path, options, print),
+    printStatementSequence(path, options, print, "statements"),
+  ];
 }
 
 export function printStatementSequence<T extends Node>(
   path: AstPath<T>,
   options: Options,
   print: PrettierChildPrint,
-  property: keyof T
+  property: keyof T,
+  blankLinkInBetween = true
 ) {
   const parts: Doc[] = [];
   const node = path.getValue();
@@ -87,6 +97,9 @@ export function printStatementSequence<T extends Node>(
 
     if (index !== statementCount - 1) {
       parts.push(hardline);
+      if (blankLinkInBetween) {
+        parts.push(hardline);
+      }
     }
   }, property);
 
@@ -189,4 +202,46 @@ function printBooleanLiteral(
 ) {
   const node = path.getValue();
   return node.value;
+}
+
+function printNamespace(
+  path: AstPath<NamespaceNode>,
+  options: Options,
+  print: PrettierChildPrint
+): Doc {
+  const node = path.getValue();
+  if (node.statements === undefined) {
+    return `namespace ${node.id};`;
+  }
+
+  return [
+    `namespace ${node.id}`,
+    hardline,
+    "{",
+    indent([
+      hardline,
+      printUsings(path, options, print),
+      printStatementSequence(path, options, print, "statements"),
+    ]),
+    hardline,
+    "}",
+  ];
+}
+
+function printUsings(
+  path: AstPath<Node & { usings?: UsingNode[] }>,
+  options: Options,
+  print: PrettierChildPrint
+): Doc {
+  const node = path.getValue();
+  if (node.usings === undefined) {
+    return "";
+  }
+  return [printStatementSequence(path, options, print, "usings", false), hardline, hardline];
+}
+
+function printUsing(path: AstPath<UsingNode>, options: Options, print: PrettierChildPrint): Doc {
+  const node = path.getValue();
+
+  return ["using ", node.name, ";"];
 }

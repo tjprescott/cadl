@@ -3,10 +3,7 @@ import { writeFileSync } from "fs";
 import prettier, { Parser, SupportLanguage } from "prettier";
 import { CSharpDocument, SyntaxKind } from "../src/csharp-syntax.js";
 import { csharpPrinter } from "../src/index.js";
-
-const csTypes = {
-  string: { kind: SyntaxKind.TypeReference, id: "string" },
-} as const;
+import { userDetails } from "./user-details.js";
 
 const ast2: CSharpDocument = {
   kind: SyntaxKind.CSharpDocument,
@@ -18,14 +15,14 @@ const ast2: CSharpDocument = {
       body: [
         {
           kind: SyntaxKind.ClassProperty,
-          type: csTypes.string,
+          type: { kind: SyntaxKind.TypeReference, id: "string" },
           visibility: "public",
           id: "Prop1",
           get: true,
         },
         {
           kind: SyntaxKind.ClassProperty,
-          type: { ...csTypes.string, nullable: true },
+          type: { kind: SyntaxKind.TypeReference, id: "string", nullable: true },
           visibility: "public",
           id: "Prop2",
           get: true,
@@ -37,78 +34,8 @@ const ast2: CSharpDocument = {
   ],
 };
 
-const ast: CSharpDocument = {
-  kind: SyntaxKind.CSharpDocument,
-  statements: [
-    {
-      kind: SyntaxKind.Class,
-      id: "UserDetails",
-      visibility: "public",
-      body: [
-        {
-          kind: SyntaxKind.ClassProperty,
-          type: csTypes.string,
-          visibility: "public",
-          id: "FirstName",
-          get: true,
-          set: true,
-          attributes: [
-            {
-              kind: SyntaxKind.Attribute,
-              funcs: [
-                {
-                  kind: SyntaxKind.AttributeFunc,
-                  name: "Length",
-                  arguments: [{ kind: SyntaxKind.NumericLiteral, value: "50" }],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          kind: SyntaxKind.ClassProperty,
-          type: csTypes.string,
-          visibility: "public",
-          id: "LastName",
-          get: true,
-          set: true,
-          attributes: [
-            {
-              kind: SyntaxKind.Attribute,
-              funcs: [
-                {
-                  kind: SyntaxKind.AttributeFunc,
-                  name: "Length",
-                  arguments: [{ kind: SyntaxKind.NumericLiteral, value: "50" }],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          kind: SyntaxKind.ClassProperty,
-          type: csTypes.string,
-          visibility: "public",
-          id: "EmailAddress",
-          get: true,
-          set: true,
-          attributes: [
-            {
-              kind: SyntaxKind.Attribute,
-              funcs: [
-                {
-                  kind: SyntaxKind.AttributeFunc,
-                  name: "Pattern",
-                  arguments: [{ kind: SyntaxKind.StringLiteral, value: "\\w+\\@\\w+\\.\\w+" }],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
+const ast = userDetails;
+
 export const languages: SupportLanguage[] = [
   {
     name: "CSharp",

@@ -1,5 +1,7 @@
 export enum SyntaxKind {
   CSharpDocument,
+  Namespace,
+  Using,
   Class,
   ClassProperty,
   TypeReference,
@@ -12,6 +14,8 @@ export enum SyntaxKind {
 
 export type Node =
   | CSharpDocument
+  | NamespaceNode
+  | UsingNode
   | ClassNode
   | ClassPropertyNode
   | TypeReferenceNode
@@ -21,7 +25,7 @@ export type Node =
 
 export type Expression = StringLiteralNode | NumericLiteralNode | BooleanLiteralNode;
 
-export type StatementNode = ClassNode;
+export type StatementNode = NamespaceNode | ClassNode;
 
 export interface NodeBase {}
 
@@ -32,9 +36,22 @@ export interface Attributable {
 export interface CSharpDocument extends NodeBase {
   kind: SyntaxKind.CSharpDocument;
   statements: StatementNode[];
+  usings?: UsingNode[];
 }
 
 export type ClassStatement = ClassNode | ClassPropertyNode;
+
+export interface NamespaceNode extends NodeBase {
+  kind: SyntaxKind.Namespace;
+  id: string;
+  statements?: StatementNode[];
+  usings?: UsingNode[];
+}
+
+export interface UsingNode extends NodeBase {
+  kind: SyntaxKind.Using;
+  name: string;
+}
 
 export interface ClassNode extends NodeBase, Attributable {
   kind: SyntaxKind.Class;
