@@ -4,9 +4,37 @@ import prettier, { Parser, SupportLanguage } from "prettier";
 import { CSharpDocument, SyntaxKind } from "../src/csharp-syntax.js";
 import { csharpPrinter } from "../src/index.js";
 
+const csTypes = {
+  string: { kind: SyntaxKind.TypeReference, id: "string" },
+} as const;
+
 const ast: CSharpDocument = {
   kind: SyntaxKind.CSharpDocument,
-  statements: [{ kind: SyntaxKind.Class }],
+  statements: [
+    {
+      kind: SyntaxKind.Class,
+      id: "Foo",
+      visibility: "public",
+      body: [
+        {
+          kind: SyntaxKind.ClassProperty,
+          type: csTypes.string,
+          visibility: "public",
+          id: "Prop1",
+          get: true,
+        },
+        {
+          kind: SyntaxKind.ClassProperty,
+          type: { ...csTypes.string, nullable: true },
+          visibility: "public",
+          id: "Prop2",
+          get: true,
+          set: true,
+          default: { kind: SyntaxKind.StringLiteral, value: "my-default" },
+        },
+      ],
+    },
+  ],
 };
 
 export const languages: SupportLanguage[] = [
@@ -39,8 +67,16 @@ export const printers = {
 
 const output = prettier.format(".", {
   parser: "cs",
-  plugins: [{ parsers, printers }],
+  plugins: [
+    {
+      parsers,
+      printers,
+      defaultOptions: {
+        tabWidth: 4,
+      },
+    },
+  ],
 });
 
-console.log("Output", output);
+console.log(`Output:\n${output}`);
 writeFileSync("./output.cs", output);

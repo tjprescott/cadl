@@ -1,5 +1,14 @@
 import prettier, { AstPath, Doc, Options, Printer } from "prettier";
-import { ClassNode, CSharpDocument, Node, SyntaxKind } from "../csharp-syntax.js";
+import {
+  ClassNode,
+  ClassPropertyNode,
+  CSharpDocument,
+  Node,
+  NumericLiteralNode,
+  StringLiteralNode,
+  SyntaxKind,
+  TypeReferenceNode,
+} from "../csharp-syntax.js";
 
 const { align, breakParent, group, hardline, ifBreak, indent, join, line, softline } =
   prettier.doc.builders;
@@ -29,8 +38,16 @@ function printNode(path: AstPath<Node>, options: Options, print: PrettierChildPr
   switch (node.kind) {
     case SyntaxKind.CSharpDocument:
       return printCSharpDocument(path as AstPath<CSharpDocument>, options, print);
+    case SyntaxKind.TypeReference:
+      return printTypeReference(path as AstPath<TypeReferenceNode>, options, print);
     case SyntaxKind.Class:
-      return printClassNode(path as AstPath<ClassNode>, options, print);
+      return printClass(path as AstPath<ClassNode>, options, print);
+    case SyntaxKind.ClassProperty:
+      return printClassProperty(path as AstPath<ClassPropertyNode>, options, print);
+    case SyntaxKind.StringLiteral:
+      return printStringLiteral(path as AstPath<StringLiteralNode>, options, print);
+    case SyntaxKind.NumericLiteral:
+      return printNumericLiteral(path as AstPath<NumericLiteralNode>, options, print);
     default:
       throw new Error(`Cannot print node type: ${(node as any).kind}`);
   }
@@ -57,7 +74,7 @@ export function printStatementSequence<T extends Node>(
     const printed = print(statementPath);
     parts.push(printed);
 
-    if (index === statementCount - 1) {
+    if (index !== statementCount - 1) {
       parts.push(hardline);
     }
   }, property);
@@ -65,7 +82,51 @@ export function printStatementSequence<T extends Node>(
   return parts;
 }
 
-function printClassNode(path: AstPath<ClassNode>, options: Options, print: PrettierChildPrint) {
+function printTypeReference(
+  path: AstPath<TypeReferenceNode>,
+  options: Options,
+  print: PrettierChildPrint
+): Doc {
   const node = path.getValue();
-  return ["class"];
+
+  return [node.id, node.nullable ? "?" : ""];
+}
+
+function printClass(path: AstPath<ClassNode>, options: Options, print: PrettierChildPrint) {
+  const node = path.getValue();
+  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const body = indent([hardline, printStatementSequence(path, options, print, "body")]);
+  return [visibility, "class ", node.id, hardline, "{", body, hardline, "}"];
+}
+
+function printClassProperty(
+  path: AstPath<ClassPropertyNode>,
+  options: Options,
+  print: PrettierChildPrint
+) {
+  const node = path.getValue();
+  const type = path.call(print, "type");
+  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const get = node.get ? "get; " : "";
+  const set = node.set ? "set; " : "";
+  const defaultValue = node.default ? [" = ", path.call(print, "default"), ";"] : "";
+  return [visibility, type, " ", node.id, " {", " ", get, set, "}", defaultValue];
+}
+
+function printStringLiteral(
+  path: AstPath<StringLiteralNode>,
+  options: Options,
+  print: PrettierChildPrint
+) {
+  const node = path.getValue();
+  return `"${node.value}"`;
+}
+
+function printNumericLiteral(
+  path: AstPath<NumericLiteralNode>,
+  options: Options,
+  print: PrettierChildPrint
+) {
+  const node = path.getValue();
+  return node.value;
 }
