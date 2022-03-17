@@ -121,6 +121,12 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@cadl-lang/csharp-client-emitter",
+      "projectFolder": "packages/csharp-client-emitter",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@cadl-lang/versioning",
       "projectFolder": "packages/versioning",
       "reviewCategory": "production",
