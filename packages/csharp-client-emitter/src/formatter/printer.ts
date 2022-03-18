@@ -134,7 +134,7 @@ function printClass(path: AstPath<ClassNode>, options: Options, print: PrettierC
   const node = path.getValue();
   const attributes = printAttributeList(path, options, print);
   const visibility = node.visibility ? `${node.visibility} ` : "";
-  const body = indent([hardline, printStatementSequence(path, options, print, "body")]);
+  const body = indent([hardline, printStatementSequence(path, options, print, "members")]);
   return [attributes, visibility, "class ", node.id, hardline, "{", body, hardline, "}"];
 }
 
@@ -142,18 +142,27 @@ function printStruct(path: AstPath<StructNode>, options: Options, print: Prettie
   const node = path.getValue();
   const attributes = printAttributeList(path, options, print);
   const visibility = node.visibility ? `${node.visibility} ` : "";
-  const body = indent([hardline, printStatementSequence(path, options, print, "body")]);
+  const body = indent([hardline, printStatementSequence(path, options, print, "members")]);
   return [attributes, visibility, "struct ", node.id, hardline, "{", body, hardline, "}"];
 }
 
 function printField(path: AstPath<FieldNode>, options: Options, print: PrettierChildPrint): Doc {
   const node = path.getValue();
   const type = path.call(print, "type");
-  const attributes = printAttributeList(path, options, print);
-
-  const visibility = node.visibility ? `${node.visibility} ` : "";
-  const defaultValue = node.default ? [" = ", path.call(print, "default")] : "";
-  return [attributes, visibility, type, " ", node.id, defaultValue, ";"];
+  const modifiers = [
+    node.visibility ? `${node.visibility} ` : "",
+    node.static ? "static " : "",
+    node.readonly ? "readonly " : "",
+  ];
+  const declarations = join(
+    ", ",
+    path.map((path: any) => {
+      const x = path.getValue();
+      const defaultValue = x.value ? [" = ", path.call(print, "value")] : "";
+      return [x.id, defaultValue];
+    }, "declarations")
+  );
+  return [...modifiers, type, " ", group(declarations), ";"];
 }
 
 function printClassProperty(

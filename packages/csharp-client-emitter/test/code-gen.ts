@@ -12,7 +12,7 @@ const ast2: CSharpDocument = {
       kind: SyntaxKind.Class,
       id: "Foo",
       visibility: "public",
-      body: [
+      members: [
         {
           kind: SyntaxKind.ClassProperty,
           type: { kind: SyntaxKind.TypeReference, id: "string" },

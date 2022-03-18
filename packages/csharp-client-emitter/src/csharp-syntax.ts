@@ -66,20 +66,20 @@ export interface UsingNode extends NodeBase {
   name: string;
 }
 
-export type ClassStatement = ClassNode | ClassPropertyNode | FieldNode;
+export type ClassMember = ClassNode | ClassPropertyNode | FieldNode;
 export interface ClassNode extends NodeBase, Attributable {
   kind: SyntaxKind.Class;
   id: string;
   visibility?: "public" | "internal" | "protected" | "private";
-  body?: ClassStatement[];
+  members?: ClassMember[];
 }
 
-export type StructStatement = FieldNode;
+export type StructMember = FieldNode;
 export interface StructNode extends NodeBase, Attributable {
   kind: SyntaxKind.Struct;
   id: string;
   visibility?: "public" | "internal" | "protected" | "private";
-  body?: StructStatement[];
+  members?: StructMember[];
 }
 
 export interface TypeReferenceNode extends NodeBase {
@@ -90,10 +90,11 @@ export interface TypeReferenceNode extends NodeBase {
 
 export interface FieldNode extends NodeBase {
   kind: SyntaxKind.Field;
-  id: string;
   type: TypeReferenceNode;
+  declarations: Array<{ id: string; value?: Expression }>;
+  static?: boolean;
+  readonly?: boolean;
   visibility?: "public" | "protected" | "private";
-  default?: Expression;
 }
 
 export interface ClassPropertyNode extends NodeBase, Attributable {

@@ -41,7 +41,7 @@ export const userDetails: CSharpDocument = {
 /// </summary>`,
             },
           ],
-          body: [
+          members: [
             {
               kind: SyntaxKind.ClassProperty,
               type: { kind: SyntaxKind.TypeReference, id: "string" },

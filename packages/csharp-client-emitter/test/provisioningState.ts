@@ -31,12 +31,42 @@ export const ProvisioningState: CSharpDocument = {
 /// </summary>`,
             },
           ],
-          body: [
+          members: [
+            {
+              kind: SyntaxKind.Field,
+              type: { kind: SyntaxKind.TypeReference, id: "ProvisioningState" },
+              visibility: "public",
+              static: true,
+              readonly: true,
+              declarations: [
+                { id: "Completed", value: { kind: SyntaxKind.StringLiteral, value: "Completed" } },
+                {
+                  id: "ResolvingDNS",
+                  value: { kind: SyntaxKind.StringLiteral, value: "ResolvingDNS" },
+                },
+                {
+                  id: "Moving",
+                  value: { kind: SyntaxKind.StringLiteral, value: "Moving" },
+                },
+                {
+                  id: "Deleting",
+                  value: { kind: SyntaxKind.StringLiteral, value: "Deleting" },
+                },
+                {
+                  id: "Succeeded",
+                  value: { kind: SyntaxKind.StringLiteral, value: "Succeeded" },
+                },
+                {
+                  id: "Failed",
+                  value: { kind: SyntaxKind.StringLiteral, value: "Failed" },
+                },
+              ],
+            },
             {
               kind: SyntaxKind.Field,
               type: { kind: SyntaxKind.TypeReference, id: "string" },
               visibility: "public",
-              id: "_value",
+              declarations: [{ id: "_value" }],
             },
           ],
         },
