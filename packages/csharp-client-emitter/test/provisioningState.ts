@@ -68,6 +68,18 @@ export const ProvisioningState: CSharpDocument = {
               visibility: "public",
               declarations: [{ id: "_value" }],
             },
+            {
+              kind: SyntaxKind.Method,
+              visibility: "public",
+              id: "ProvisioningState",
+              arguments: [
+                {
+                  kind: SyntaxKind.ArgumentDeclaration,
+                  id: "state",
+                  type: { kind: SyntaxKind.TypeReference, id: "string" },
+                },
+              ],
+            },
           ],
         },
       ],

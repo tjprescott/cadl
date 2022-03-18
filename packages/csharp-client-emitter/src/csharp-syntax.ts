@@ -1,32 +1,36 @@
 export enum SyntaxKind {
   Attribute,
   AttributeFunc,
+  ArgumentDeclaration,
   BooleanLiteral,
   Class,
-  Struct,
   ClassProperty,
-  Field,
   Comment,
   CSharpDocument,
+  Field,
+  Method,
   Namespace,
   NumericLiteral,
   StringLiteral,
+  Struct,
   TypeReference,
   Using,
 }
 
 export type Node =
-  | CSharpDocument
-  | NamespaceNode
-  | UsingNode
-  | ClassNode
-  | StructNode
-  | ClassPropertyNode
-  | TypeReferenceNode
-  | AttributeNode
+  | ArgumentDeclarationNode
   | AttributeFuncNode
+  | AttributeNode
+  | ClassNode
+  | ClassPropertyNode
+  | CSharpDocument
+  | Expression
   | FieldNode
-  | Expression;
+  | MethodNode
+  | NamespaceNode
+  | StructNode
+  | TypeReferenceNode
+  | UsingNode;
 
 export type Expression = StringLiteralNode | NumericLiteralNode | BooleanLiteralNode;
 
@@ -66,7 +70,7 @@ export interface UsingNode extends NodeBase {
   name: string;
 }
 
-export type ClassMember = ClassNode | ClassPropertyNode | FieldNode;
+export type ClassMember = ClassNode | ClassPropertyNode | FieldNode | MethodNode;
 export interface ClassNode extends NodeBase, Attributable {
   kind: SyntaxKind.Class;
   id: string;
@@ -74,7 +78,7 @@ export interface ClassNode extends NodeBase, Attributable {
   members?: ClassMember[];
 }
 
-export type StructMember = FieldNode;
+export type StructMember = FieldNode | MethodNode;
 export interface StructNode extends NodeBase, Attributable {
   kind: SyntaxKind.Struct;
   id: string;
@@ -105,6 +109,24 @@ export interface ClassPropertyNode extends NodeBase, Attributable {
   get?: boolean;
   set?: boolean;
 
+  default?: Expression;
+}
+
+export interface MethodNode extends NodeBase, Attributable {
+  kind: SyntaxKind.Method;
+  id: string;
+  returnType?: TypeReferenceNode;
+  visibility?: "public" | "protected" | "private";
+  override?: boolean;
+  virtual?: boolean;
+  abstract?: boolean;
+  arguments?: ArgumentDeclarationNode[];
+}
+
+export interface ArgumentDeclarationNode {
+  kind: SyntaxKind.ArgumentDeclaration;
+  id: string;
+  type: TypeReferenceNode;
   default?: Expression;
 }
 

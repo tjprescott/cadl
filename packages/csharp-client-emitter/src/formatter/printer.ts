@@ -1,5 +1,6 @@
 import prettier, { AstPath, Doc, Options, Printer } from "prettier";
 import {
+  ArgumentDeclarationNode,
   Attributable,
   AttributeFuncNode,
   AttributeNode,
@@ -9,6 +10,7 @@ import {
   Comment,
   CSharpDocument,
   FieldNode,
+  MethodNode,
   NamespaceNode,
   Node,
   NumericLiteralNode,
@@ -64,6 +66,10 @@ function printNode(path: AstPath<Node>, options: Options, print: PrettierChildPr
       return printField(path as AstPath<FieldNode>, options, print);
     case SyntaxKind.ClassProperty:
       return printClassProperty(path as AstPath<ClassPropertyNode>, options, print);
+    case SyntaxKind.Method:
+      return printMethod(path as AstPath<MethodNode>, options, print);
+    case SyntaxKind.ArgumentDeclaration:
+      return printArgumentDeclaration(path as AstPath<ArgumentDeclarationNode>, options, print);
     case SyntaxKind.Attribute:
       return printAttribute(path as AstPath<AttributeNode>, options, print);
     case SyntaxKind.AttributeFunc:
@@ -381,4 +387,15 @@ function printDanglingComments(
     return [join(hardline, parts), hardline];
   }
   return [indent([hardline, join(hardline, parts)]), hardline];
+}
+function printMethod(path: AstPath<MethodNode>, options: Options, print: PrettierChildPrint): Doc {
+  throw new Error("Function not implemented.");
+}
+
+function printArgumentDeclaration(
+  path: AstPath<ArgumentDeclarationNode>,
+  options: Options,
+  print: PrettierChildPrint
+): Doc {
+  throw new Error("Function not implemented.");
 }
