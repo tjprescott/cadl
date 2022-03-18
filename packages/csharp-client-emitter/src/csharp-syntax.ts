@@ -77,6 +77,7 @@ export interface ClassNode extends NodeBase, Attributable {
   kind: SyntaxKind.Class;
   id: string;
   visibility?: "public" | "internal" | "protected" | "private";
+  partial?: boolean;
   members?: ClassMember[];
 }
 

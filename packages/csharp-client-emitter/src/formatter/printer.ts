@@ -142,17 +142,18 @@ function printTypeReference(
 function printClass(path: AstPath<ClassNode>, options: Options, print: PrettierChildPrint) {
   const node = path.getValue();
   const attributes = printAttributeList(path, options, print);
-  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const modifiers = printModifiers(node, ["partial"]);
   const body = indent([hardline, printStatementSequence(path, options, print, "members")]);
-  return [attributes, visibility, "class ", node.id, hardline, "{", body, hardline, "}"];
+  return [attributes, modifiers, "class ", node.id, hardline, "{", body, hardline, "}"];
 }
 
 function printStruct(path: AstPath<StructNode>, options: Options, print: PrettierChildPrint): Doc {
   const node = path.getValue();
   const attributes = printAttributeList(path, options, print);
-  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const modifiers = printModifiers(node, []);
+
   const body = indent([hardline, printStatementSequence(path, options, print, "members")]);
-  return [attributes, visibility, "struct ", node.id, hardline, "{", body, hardline, "}"];
+  return [attributes, modifiers, "struct ", node.id, hardline, "{", body, hardline, "}"];
 }
 
 function printField(path: AstPath<FieldNode>, options: Options, print: PrettierChildPrint): Doc {
@@ -183,11 +184,11 @@ function printClassProperty(
   const type = path.call(print, "type");
   const attributes = printAttributeList(path, options, print);
 
-  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const modifiers = printModifiers(node, []);
   const get = node.get ? "get; " : "";
   const set = node.set ? "set; " : "";
   const defaultValue = node.default ? [" = ", path.call(print, "default"), ";"] : "";
-  return [attributes, visibility, type, " ", node.id, " {", " ", get, set, "}", defaultValue];
+  return [attributes, modifiers, type, " ", node.id, " {", " ", get, set, "}", defaultValue];
 }
 
 function printAttributeList(
