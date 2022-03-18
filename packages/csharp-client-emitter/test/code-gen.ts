@@ -3,7 +3,7 @@ import { writeFileSync } from "fs";
 import prettier, { Parser, SupportLanguage } from "prettier";
 import { CSharpDocument, SyntaxKind } from "../src/csharp-syntax.js";
 import { csharpPrinter } from "../src/index.js";
-import { userDetails } from "./user-details.js";
+import { ProvisioningState } from "./provisioningState.js";
 
 const ast2: CSharpDocument = {
   kind: SyntaxKind.CSharpDocument,
@@ -34,7 +34,7 @@ const ast2: CSharpDocument = {
   ],
 };
 
-const ast = userDetails;
+const ast = ProvisioningState;
 
 export const languages: SupportLanguage[] = [
   {

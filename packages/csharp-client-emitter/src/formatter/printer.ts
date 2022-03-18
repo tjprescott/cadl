@@ -8,10 +8,12 @@ import {
   ClassPropertyNode,
   Comment,
   CSharpDocument,
+  FieldNode,
   NamespaceNode,
   Node,
   NumericLiteralNode,
   StringLiteralNode,
+  StructNode,
   SyntaxKind,
   TypeReferenceNode,
   UsingNode,
@@ -56,6 +58,10 @@ function printNode(path: AstPath<Node>, options: Options, print: PrettierChildPr
       return printUsing(path as AstPath<UsingNode>, options, print);
     case SyntaxKind.Class:
       return printClass(path as AstPath<ClassNode>, options, print);
+    case SyntaxKind.Struct:
+      return printStruct(path as AstPath<StructNode>, options, print);
+    case SyntaxKind.Field:
+      return printField(path as AstPath<FieldNode>, options, print);
     case SyntaxKind.ClassProperty:
       return printClassProperty(path as AstPath<ClassPropertyNode>, options, print);
     case SyntaxKind.Attribute:
@@ -78,8 +84,12 @@ function printCSharpDocument(
   options: Options,
   print: PrettierChildPrint
 ) {
+  const node = path.getValue();
+  const headerComments = node.headerComments
+    ? [printDanglingComments(path, options, { sameIndent: true, key: "headerComments" }), hardline]
+    : "";
   return [
-    printDanglingComments(path, options, { sameIndent: true, key: "headerComments" }),
+    headerComments,
     printUsings(path, options, print),
     printStatementSequence(path, options, print, "statements"),
   ];
@@ -126,6 +136,24 @@ function printClass(path: AstPath<ClassNode>, options: Options, print: PrettierC
   const visibility = node.visibility ? `${node.visibility} ` : "";
   const body = indent([hardline, printStatementSequence(path, options, print, "body")]);
   return [attributes, visibility, "class ", node.id, hardline, "{", body, hardline, "}"];
+}
+
+function printStruct(path: AstPath<StructNode>, options: Options, print: PrettierChildPrint): Doc {
+  const node = path.getValue();
+  const attributes = printAttributeList(path, options, print);
+  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const body = indent([hardline, printStatementSequence(path, options, print, "body")]);
+  return [attributes, visibility, "struct ", node.id, hardline, "{", body, hardline, "}"];
+}
+
+function printField(path: AstPath<FieldNode>, options: Options, print: PrettierChildPrint): Doc {
+  const node = path.getValue();
+  const type = path.call(print, "type");
+  const attributes = printAttributeList(path, options, print);
+
+  const visibility = node.visibility ? `${node.visibility} ` : "";
+  const defaultValue = node.default ? [" = ", path.call(print, "default")] : "";
+  return [attributes, visibility, type, " ", node.id, defaultValue, ";"];
 }
 
 function printClassProperty(

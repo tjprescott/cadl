@@ -3,7 +3,9 @@ export enum SyntaxKind {
   AttributeFunc,
   BooleanLiteral,
   Class,
+  Struct,
   ClassProperty,
+  Field,
   Comment,
   CSharpDocument,
   Namespace,
@@ -18,15 +20,17 @@ export type Node =
   | NamespaceNode
   | UsingNode
   | ClassNode
+  | StructNode
   | ClassPropertyNode
   | TypeReferenceNode
   | AttributeNode
   | AttributeFuncNode
+  | FieldNode
   | Expression;
 
 export type Expression = StringLiteralNode | NumericLiteralNode | BooleanLiteralNode;
 
-export type StatementNode = NamespaceNode | ClassNode;
+export type StatementNode = NamespaceNode | ClassNode | StructNode;
 
 export interface NodeBase {
   comments?: Comment[];
@@ -50,8 +54,6 @@ export interface CSharpDocument {
   usings?: UsingNode[];
 }
 
-export type ClassStatement = ClassNode | ClassPropertyNode;
-
 export interface NamespaceNode extends NodeBase {
   kind: SyntaxKind.Namespace;
   id: string;
@@ -64,6 +66,7 @@ export interface UsingNode extends NodeBase {
   name: string;
 }
 
+export type ClassStatement = ClassNode | ClassPropertyNode | FieldNode;
 export interface ClassNode extends NodeBase, Attributable {
   kind: SyntaxKind.Class;
   id: string;
@@ -71,10 +74,26 @@ export interface ClassNode extends NodeBase, Attributable {
   body?: ClassStatement[];
 }
 
+export type StructStatement = FieldNode;
+export interface StructNode extends NodeBase, Attributable {
+  kind: SyntaxKind.Struct;
+  id: string;
+  visibility?: "public" | "internal" | "protected" | "private";
+  body?: StructStatement[];
+}
+
 export interface TypeReferenceNode extends NodeBase {
   kind: SyntaxKind.TypeReference;
   id: string;
   nullable?: boolean;
+}
+
+export interface FieldNode extends NodeBase {
+  kind: SyntaxKind.Field;
+  id: string;
+  type: TypeReferenceNode;
+  visibility?: "public" | "protected" | "private";
+  default?: Expression;
 }
 
 export interface ClassPropertyNode extends NodeBase, Attributable {
