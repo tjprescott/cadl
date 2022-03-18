@@ -388,8 +388,22 @@ function printDanglingComments(
   }
   return [indent([hardline, join(hardline, parts)]), hardline];
 }
+
+function printModifiers<T extends { visibility?: string }>(node: T, modifiers: (keyof T)[]): Doc {
+  return [
+    node.visibility ? `${node.visibility} ` : "",
+    ...modifiers.map((x) => {
+      return node[x] ? `${x} ` : "";
+    }),
+  ];
+}
+
 function printMethod(path: AstPath<MethodNode>, options: Options, print: PrettierChildPrint): Doc {
-  throw new Error("Function not implemented.");
+  const node = path.getValue();
+  const returnType = node.returnType ? [path.call(print, "returnType"), " "] : "";
+  const modifiers = printModifiers(node, ["abstract", "virtual", "override"]);
+  const args = join(", ", path.map(print, "arguments"));
+  return [modifiers, returnType, node.id, "(", args, ")", hardline, "{", hardline, "}"];
 }
 
 function printArgumentDeclaration(
@@ -397,5 +411,7 @@ function printArgumentDeclaration(
   options: Options,
   print: PrettierChildPrint
 ): Doc {
-  throw new Error("Function not implemented.");
+  const node = path.getValue();
+  const defaultValue = node.default ? [" = ", path.call(print, "default")] : "";
+  return [path.call(print, "returnType"), " ", defaultValue];
 }
