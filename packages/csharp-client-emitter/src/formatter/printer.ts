@@ -14,6 +14,7 @@ import {
   NamespaceNode,
   Node,
   NumericLiteralNode,
+  RawNode,
   StringLiteralNode,
   StructNode,
   SyntaxKind,
@@ -80,6 +81,8 @@ function printNode(path: AstPath<Node>, options: Options, print: PrettierChildPr
       return printNumericLiteral(path as AstPath<NumericLiteralNode>, options, print);
     case SyntaxKind.BooleanLiteral:
       return printBooleanLiteral(path as AstPath<BooleanLiteralNode>, options, print);
+    case SyntaxKind.Raw:
+      return printRaw(path as AstPath<RawNode>, options, print);
     default:
       throw new Error(`Cannot print node type: ${(node as any).kind}`);
   }
@@ -402,8 +405,22 @@ function printMethod(path: AstPath<MethodNode>, options: Options, print: Prettie
   const node = path.getValue();
   const returnType = node.returnType ? [path.call(print, "returnType"), " "] : "";
   const modifiers = printModifiers(node, ["abstract", "virtual", "override"]);
-  const args = join(", ", path.map(print, "arguments"));
-  return [modifiers, returnType, node.id, "(", args, ")", hardline, "{", hardline, "}"];
+  const args = node.arguments ? join(", ", path.map(print, "arguments")) : "";
+
+  const body = printStatementSequence(path, options, print, "body", false);
+  return [
+    modifiers,
+    returnType,
+    node.id,
+    "(",
+    args,
+    ")",
+    hardline,
+    "{",
+    indent([hardline, body]),
+    hardline,
+    "}",
+  ];
 }
 
 function printArgumentDeclaration(
@@ -413,5 +430,10 @@ function printArgumentDeclaration(
 ): Doc {
   const node = path.getValue();
   const defaultValue = node.default ? [" = ", path.call(print, "default")] : "";
-  return [path.call(print, "returnType"), " ", defaultValue];
+  return [path.call(print, "type"), " ", node.id, defaultValue];
+}
+
+function printRaw(path: AstPath<RawNode>, options: Options, print: PrettierChildPrint): Doc {
+  const node = path.getValue();
+  return node.value;
 }

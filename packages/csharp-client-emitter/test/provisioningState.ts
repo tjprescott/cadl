@@ -79,6 +79,24 @@ export const ProvisioningState: CSharpDocument = {
                   type: { kind: SyntaxKind.TypeReference, id: "string" },
                 },
               ],
+              body: [
+                {
+                  kind: SyntaxKind.Raw,
+                  value: "_value = state;",
+                },
+              ],
+            },
+            {
+              kind: SyntaxKind.Method,
+              visibility: "public",
+              override: true,
+              id: "ToString",
+              body: [
+                {
+                  kind: SyntaxKind.Raw,
+                  value: "return _value;",
+                },
+              ],
             },
           ],
         },

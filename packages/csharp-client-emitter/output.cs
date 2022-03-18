@@ -15,6 +15,12 @@ namespace Microsoft.Confluent.Service.Models
 
         public ProvisioningState(string state)
         {
+            _value = state;
+        }
+
+        public override ToString()
+        {
+            return _value;
         }
     }
 }
