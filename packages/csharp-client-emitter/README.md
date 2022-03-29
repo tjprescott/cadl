@@ -1,1 +1,1 @@
-# Cadl CSharp Client Emitter
+# Cadl Python Client Emitter

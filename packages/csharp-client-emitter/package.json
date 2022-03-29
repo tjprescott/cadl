@@ -1,5 +1,5 @@
 {
-  "name": "@cadl-lang/csharp-client-emitter",
+  "name": "@cadl-lang/python-client-emitter",
   "version": "0.9.0",
   "author": "Microsoft Corporation",
   "description": "Cadl library for emitting OpenAPI 3.0 from the Cadl REST protocol binding",
