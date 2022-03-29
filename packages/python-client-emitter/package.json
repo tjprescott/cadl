@@ -32,7 +32,7 @@
       ]
     }
   },
-  "cadlMain": "dist/src/openapi.js",
+  "cadlMain": "dist/src/index.js",
   "engines": {
     "node": ">=14.0.0"
   },
