@@ -108,8 +108,14 @@ namespace Microsoft.Cadl.VisualStudio {
 
 #if VS2022
     public Task<InitializationFailureContext?> OnServerInitializeFailedAsync(ILanguageClientInitializationInfo initializationState) {
-      Debug.Fail("Failed to initialize cadl-server:\r\n\r\n" + initializationState.InitializationException);
-      return Task.FromResult<InitializationFailureContext?>(null);
+      var exception = initializationState.InitializationException;
+      Debug.Fail("Failed to initialize cadl-server:\r\n\r\n" + exception);
+      return Task.FromResult<InitializationFailureContext?>(
+        new InitializationFailureContext {
+          FailureMessage = "Failed to activate Cadl language server!\r\n" +
+                           "File issue at https://github.com/microsoft/cadl\r\n\r\n" +
+                           exception
+      });
     }
 #endif
 
@@ -156,7 +162,7 @@ namespace Microsoft.Cadl.VisualStudio {
       }
 #endif
 
-      var serverPath = settings.Property<string>("cadl.cadl-server.path");
+      var serverPath = settings?.Property<string>("cadl.cadl-server.path");
       if (serverPath == null) {
         return ("cadl-server.cmd", args);
       }

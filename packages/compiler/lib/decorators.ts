@@ -14,8 +14,10 @@ import {
   ModelType,
   ModelTypeProperty,
   NamespaceType,
+  NeverType,
   OperationType,
   Type,
+  VoidType,
 } from "../core/types.js";
 
 export const namespace = "Cadl";
@@ -125,6 +127,14 @@ export function isErrorType(type: Type): boolean {
   return type.kind === "Intrinsic" && type.name === "ErrorType";
 }
 
+export function isVoidType(type: Type): type is VoidType {
+  return type.kind === "Intrinsic" && type.name === "void";
+}
+
+export function isNeverType(type: Type): type is NeverType {
+  return type.kind === "Intrinsic" && type.name === "never";
+}
+
 const numericTypesKey = Symbol();
 export function $numeric({ program }: DecoratorContext, target: Type) {
   if (!isIntrinsic(program, target)) {
@@ -181,7 +191,7 @@ const formatValuesKey = Symbol();
 export function $format({ program }: DecoratorContext, target: Type, format: string) {
   if (
     !validateDecoratorTarget(program, target, "@format", ["Model", "ModelProperty"]) ||
-    !validateDecoratorTargetIntrinsic(program, target, "@pattern", "string")
+    !validateDecoratorTargetIntrinsic(program, target, "@format", ["string", "bytes"])
   ) {
     return;
   }

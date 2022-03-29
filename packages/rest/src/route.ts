@@ -19,6 +19,7 @@ import {
   HttpVerb,
   isBody,
 } from "./http.js";
+import { getResponsesForOperation, HttpOperationResponse } from "./responses.js";
 import { getAction, getResourceOperation, getSegment } from "./rest.js";
 
 export type OperationContainer = NamespaceType | InterfaceType;
@@ -41,6 +42,7 @@ export interface OperationDetails {
   groupName: string;
   container: OperationContainer;
   parameters: HttpOperationParameters;
+  responses: HttpOperationResponse[];
   operation: OperationType;
 }
 
@@ -124,7 +126,10 @@ export function getRoutePath(
 
 function buildPath(pathFragments: string[]) {
   // Join all fragments with leading and trailing slashes trimmed
-  const path = pathFragments.map((r) => r.replace(/(^\/|\/$)/g, "")).join("/");
+  const path = pathFragments
+    .map((r) => r.replace(/(^\/|\/$)/g, ""))
+    .filter((x) => x !== "")
+    .join("/");
   return `/${path}`;
 }
 
@@ -344,6 +349,7 @@ function buildRoutes(
 
     const route = getPathForOperation(program, op, parentFragments);
     const verb = getVerbForOperation(program, op, route.parameters);
+    const responses = getResponsesForOperation(program, op);
     operations.push({
       path: route.path,
       pathFragment: route.pathFragment,
@@ -352,6 +358,7 @@ function buildRoutes(
       groupName: container.name,
       parameters: route.parameters,
       operation: op,
+      responses,
     });
   }
 

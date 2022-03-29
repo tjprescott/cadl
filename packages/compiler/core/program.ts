@@ -54,7 +54,7 @@ export interface Program {
   readonly diagnostics: readonly Diagnostic[];
   loadCadlScript(cadlScript: SourceFile): Promise<CadlScriptNode>;
   evalCadlScript(cadlScript: string): void;
-  onValidate(cb: (program: Program) => void): Promise<void> | void;
+  onValidate(cb: (program: Program) => void | Promise<void>): void;
   getOption(key: string): string | undefined;
   stateSet(key: symbol): Set<Type>;
   stateSets: Map<symbol, Set<Type>>;
@@ -271,6 +271,9 @@ export async function createProgram(
   const checker = (program.checker = createChecker(program));
   program.checker.checkProgram();
 
+  if (program.hasError()) {
+    return program;
+  }
   for (const cb of validateCbs) {
     try {
       await cb(program);
@@ -287,6 +290,10 @@ export async function createProgram(
         throw error;
       }
     }
+  }
+
+  if (program.hasError()) {
+    return program;
   }
 
   for (const instance of emitters) {

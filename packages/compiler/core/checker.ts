@@ -2,15 +2,19 @@ import { createSymbol, createSymbolTable } from "./binder.js";
 import { compilerAssert, ProjectionError } from "./diagnostics.js";
 import {
   DecoratorContext,
+  Expression,
   isIntrinsic,
   JsSourceFileNode,
+  NeverType,
   ProjectionModelExpressionNode,
   ProjectionModelPropertyNode,
   ProjectionModelSpreadPropertyNode,
   SymbolFlags,
+  TemplateParameterType,
+  VoidType,
 } from "./index.js";
 import { createDiagnostic, reportDiagnostic } from "./messages.js";
-import { hasParseError } from "./parser.js";
+import { hasParseError, visitChildren } from "./parser.js";
 import { Program } from "./program.js";
 import { createProjectionMembers } from "./projectionMembers.js";
 import {
@@ -32,7 +36,6 @@ import {
   InterfaceStatementNode,
   InterfaceType,
   IntersectionExpressionNode,
-  IntrinsicType,
   LiteralNode,
   LiteralType,
   MemberExpressionNode,
@@ -95,8 +98,6 @@ export interface Checker {
   setUsingsForFile(file: CadlScriptNode): void;
   checkProgram(): void;
   checkSourceFile(file: CadlScriptNode): void;
-  checkModelProperty(prop: ModelPropertyNode): ModelTypeProperty;
-  checkUnionExpression(node: UnionExpressionNode): UnionType;
   getGlobalNamespaceType(): NamespaceType;
   getGlobalNamespaceNode(): NamespaceStatementNode;
   getMergedSymbol(sym: Sym | undefined): Sym | undefined;
@@ -133,9 +134,9 @@ export interface Checker {
     node?: StringLiteralNode | NumericLiteralNode | BooleanLiteralNode
   ): StringLiteralType | NumericLiteralType | BooleanLiteralType;
 
-  errorType: IntrinsicType;
-  voidType: IntrinsicType;
-  neverType: IntrinsicType;
+  errorType: ErrorType;
+  voidType: VoidType;
+  neverType: NeverType;
 }
 
 interface TypePrototype {
@@ -270,8 +271,6 @@ export function createChecker(program: Program): Checker {
     getTypeForNode,
     checkProgram,
     checkSourceFile,
-    checkModelProperty,
-    checkUnionExpression,
     getLiteralType,
     getTypeName,
     getNamespaceString,
@@ -477,18 +476,82 @@ export function createChecker(program: Program): Checker {
       | InterfaceStatementNode
       | UnionStatementNode
       | AliasStatementNode;
-
-    const defaultType = node.default ? getTypeForNode(node.default) : undefined;
-
-    if (instantiatingTemplate === parentNode) {
-      const index = parentNode.templateParameters.findIndex((v) => v === node);
-      return templateInstantiation[index] ?? defaultType;
+    const links = getSymbolLinks(node.symbol);
+    const isInstantiatingThisTemplate = instantiatingTemplate === parentNode;
+    if (links.declaredType && !isInstantiatingThisTemplate) {
+      return links.declaredType;
     }
-
-    return createAndFinishType({
+    const index = parentNode.templateParameters.findIndex((v) => v === node);
+    const type: TemplateParameterType = createAndFinishType({
       kind: "TemplateParameter",
       node: node,
     });
+
+    if (!isInstantiatingThisTemplate) {
+      // Cache the type to prevent circual reference stack overflows.
+      links.declaredType = type;
+
+      if (node.default) {
+        type.default = checkTemplateParameterDefault(
+          node.default,
+          parentNode.templateParameters,
+          index
+        );
+      }
+    } else {
+      return (
+        templateInstantiation[index] ??
+        getResolvedTypeParameterDefault(links.declaredType as TemplateParameterType)
+      );
+    }
+
+    return type;
+  }
+
+  function getResolvedTypeParameterDefault(declaredType: TemplateParameterType): Type | undefined {
+    if (declaredType.default === undefined) {
+      return undefined;
+    }
+    if (isErrorType(declaredType.default)) {
+      return declaredType.default;
+    }
+    if (declaredType.default.kind === "TemplateParameter") {
+      return getTypeForNode(declaredType.default.node);
+    } else {
+      return declaredType.default;
+    }
+  }
+
+  function checkTemplateParameterDefault(
+    nodeDefault: Expression,
+    templateParameters: readonly TemplateParameterDeclarationNode[],
+    index: number
+  ) {
+    function visit(node: Node) {
+      const type = getTypeForNode(node);
+      let hasError = false;
+      if (type.kind === "TemplateParameter") {
+        for (let i = index; i < templateParameters.length; i++) {
+          if (type.node.symbol === templateParameters[i].symbol) {
+            program.reportDiagnostic(
+              createDiagnostic({ code: "invalid-template-default", target: node })
+            );
+            return errorType;
+          }
+        }
+        return type;
+      }
+
+      visitChildren(node, (x) => {
+        const visited = visit(x);
+        if (visited === errorType) {
+          hasError = true;
+        }
+      });
+
+      return hasError ? errorType : type;
+    }
+    return visit(nodeDefault);
   }
 
   function checkTypeReference(
@@ -615,7 +678,6 @@ export function createChecker(program: Program): Checker {
         );
       }
       if (sym.flags & SymbolFlags.TemplateParameter) {
-        // TODO: could cache this probably.
         baseType = checkTemplateParameterDeclaration(
           sym.declarations[0] as TemplateParameterDeclarationNode
         );
@@ -650,7 +712,20 @@ export function createChecker(program: Program): Checker {
     args: Type[]
   ): Type {
     const symbolLinks = getSymbolLinks(templateNode.symbol);
-    const cached = symbolLinks.instantiations!.get(args) as ModelType;
+    if (symbolLinks.instantiations === undefined) {
+      const type = getTypeForNode(templateNode);
+      if (isErrorType(type)) {
+        return errorType;
+      } else {
+        compilerAssert(
+          false,
+          `Unexpected checker error. symbolLinks.instantiations was not defined for ${
+            SyntaxKind[templateNode.kind]
+          }`
+        );
+      }
+    }
+    const cached = symbolLinks.instantiations.get(args) as ModelType;
     if (cached) {
       return cached;
     }
@@ -717,8 +792,16 @@ export function createChecker(program: Program): Checker {
    */
   function checkIntersectionExpression(node: IntersectionExpressionNode) {
     const optionTypes = node.options.map(getTypeForNode);
-
     const properties = new Map<string, ModelTypeProperty>();
+
+    const intersection: ModelType = createType({
+      kind: "Model",
+      node,
+      name: "",
+      properties: properties,
+      decorators: [],
+    });
+
     for (const option of optionTypes) {
       if (option.kind === "TemplateParameter") {
         continue;
@@ -740,24 +823,12 @@ export function createChecker(program: Program): Checker {
           continue;
         }
 
-        const newPropType = finishType({
-          ...prop,
-          sourceProperty: prop,
-        });
-
+        const newPropType = cloneType(prop, { sourceProperty: prop, model: intersection });
         properties.set(prop.name, newPropType);
       }
     }
 
-    const intersection = createAndFinishType({
-      kind: "Model",
-      node,
-      name: "",
-      properties: properties,
-      decorators: [], // could probably include both sets of decorators here...
-    });
-
-    return intersection;
+    return finishType(intersection);
   }
 
   function checkArrayExpression(node: ArrayExpressionNode): ArrayType {
@@ -1146,9 +1217,11 @@ export function createChecker(program: Program): Checker {
       if (binding) return binding.flags & SymbolFlags.DuplicateUsing ? undefined : binding;
     }
 
-    program.reportDiagnostic(
-      createDiagnostic({ code: "unknown-identifier", format: { id: node.sv }, target: node })
-    );
+    if (!isInstantiatingTemplateType()) {
+      program.reportDiagnostic(
+        createDiagnostic({ code: "unknown-identifier", format: { id: node.sv }, target: node })
+      );
+    }
     return undefined;
   }
 
@@ -1294,7 +1367,6 @@ export function createChecker(program: Program): Checker {
       namespace: getParentNamespaceType(node),
       decorators,
     });
-
     if (!instantiatingThisTemplate) {
       links.declaredType = type;
     }
@@ -1336,7 +1408,7 @@ export function createChecker(program: Program): Checker {
     );
 
     // Evaluate the properties after
-    checkModelProperties(node, type.properties, inheritedPropNames);
+    checkModelProperties(node, type.properties, type, inheritedPropNames);
 
     if (shouldCreateTypeForTemplate(node)) {
       finishType(type);
@@ -1356,30 +1428,30 @@ export function createChecker(program: Program): Checker {
 
   function checkModelExpression(node: ModelExpressionNode) {
     const properties = new Map();
-    checkModelProperties(node, properties);
-    const type: ModelType = createAndFinishType({
+    const type: ModelType = createType({
       kind: "Model",
       name: "",
       node: node,
       properties,
       decorators: [],
     });
-
-    return type;
+    checkModelProperties(node, properties, type);
+    return finishType(type);
   }
 
   function checkModelProperties(
     node: ModelExpressionNode | ModelStatementNode,
     properties: Map<string, ModelTypeProperty>,
+    parentModel: ModelType,
     inheritedPropertyNames?: Set<string>
   ) {
     for (const prop of node.properties!) {
       if ("id" in prop) {
-        const newProp = getTypeForNode(prop) as ModelTypeProperty;
+        const newProp = checkModelProperty(prop, parentModel);
         defineProperty(properties, newProp, inheritedPropertyNames);
       } else {
         // spread property
-        const newProperties = checkSpreadProperty(prop.target);
+        const newProperties = checkSpreadProperty(prop.target, parentModel);
 
         for (const newProp of newProperties) {
           defineProperty(properties, newProp, inheritedPropertyNames);
@@ -1432,11 +1504,13 @@ export function createChecker(program: Program): Checker {
     }
 
     if (pendingResolutions.has(getNodeSymId(target.declarations[0] as any))) {
-      reportDiagnostic(program, {
-        code: "circular-base-type",
-        format: { typeName: (target.declarations[0] as any).id.sv },
-        target: target,
-      });
+      if (!isInstantiatingTemplateType()) {
+        reportDiagnostic(program, {
+          code: "circular-base-type",
+          format: { typeName: (target.declarations[0] as any).id.sv },
+          target: target,
+        });
+      }
       return undefined;
     }
     const heritageType = checkTypeReferenceSymbol(target, heritageRef);
@@ -1479,11 +1553,13 @@ export function createChecker(program: Program): Checker {
       return undefined;
     }
     if (pendingResolutions.has(getNodeSymId(target.declarations[0] as any))) {
-      reportDiagnostic(program, {
-        code: "circular-base-type",
-        format: { typeName: (target.declarations[0] as any).id.sv },
-        target: target,
-      });
+      if (!isInstantiatingTemplateType()) {
+        reportDiagnostic(program, {
+          code: "circular-base-type",
+          format: { typeName: (target.declarations[0] as any).id.sv },
+          target: target,
+        });
+      }
       return undefined;
     }
     const isType = checkTypeReferenceSymbol(target, isExpr);
@@ -1497,11 +1573,14 @@ export function createChecker(program: Program): Checker {
     return isType;
   }
 
-  function checkSpreadProperty(targetNode: TypeReferenceNode): ModelTypeProperty[] {
+  function checkSpreadProperty(
+    targetNode: TypeReferenceNode,
+    parentModel: ModelType
+  ): ModelTypeProperty[] {
     const props: ModelTypeProperty[] = [];
     const targetType = getTypeForNode(targetNode);
 
-    if (targetType.kind != "TemplateParameter") {
+    if (targetType.kind != "TemplateParameter" && !isErrorType(targetType)) {
       if (targetType.kind !== "Model") {
         program.reportDiagnostic(createDiagnostic({ code: "spread-model", target: targetNode }));
         return props;
@@ -1509,7 +1588,7 @@ export function createChecker(program: Program): Checker {
 
       // copy each property
       for (const prop of walkPropertiesInherited(targetType)) {
-        const newProp = cloneType(prop, { sourceProperty: prop });
+        const newProp = cloneType(prop, { sourceProperty: prop, model: parentModel });
         props.push(newProp);
       }
     }
@@ -1526,7 +1605,7 @@ export function createChecker(program: Program): Checker {
     }
   }
 
-  function checkModelProperty(prop: ModelPropertyNode): ModelTypeProperty {
+  function checkModelProperty(prop: ModelPropertyNode, parentModel?: ModelType): ModelTypeProperty {
     const decorators = checkDecorators(prop);
     const valueType = getTypeForNode(prop.value);
     const defaultValue = prop.default && checkDefault(getTypeForNode(prop.default), valueType);
@@ -1540,15 +1619,16 @@ export function createChecker(program: Program): Checker {
       type: valueType,
       decorators,
       default: defaultValue,
+      model: parentModel,
     });
 
-    const parentModel = prop.parent! as
+    const parentModelNode = prop.parent! as
       | ModelStatementNode
       | ModelExpressionNode
       | OperationStatementNode;
     if (
-      parentModel.kind !== SyntaxKind.ModelStatement ||
-      shouldCreateTypeForTemplate(parentModel)
+      parentModelNode.kind !== SyntaxKind.ModelStatement ||
+      shouldCreateTypeForTemplate(parentModelNode)
     ) {
       finishType(type);
     }
@@ -1743,11 +1823,14 @@ export function createChecker(program: Program): Checker {
 
     const aliasSymId = getNodeSymId(node);
     if (pendingResolutions.has(aliasSymId)) {
-      reportDiagnostic(program, {
-        code: "circular-alias-type",
-        format: { typeName: node.id.sv },
-        target: node,
-      });
+      if (!isInstantiatingTemplateType()) {
+        reportDiagnostic(program, {
+          code: "circular-alias-type",
+          format: { typeName: node.id.sv },
+          target: node,
+        });
+      }
+      links.declaredType = errorType;
       return errorType;
     }
 
@@ -2025,8 +2108,16 @@ export function createChecker(program: Program): Checker {
       target
     );
 
-    // peel `fn` off to avoid setting `this`.
+    for (const arg of decApp.args) {
+      if (typeof arg === "object") {
+        if (isErrorType(arg)) {
+          // If one of the decorator argument is an error don't run it.
+          return;
+        }
+      }
+    }
 
+    // peel `fn` off to avoid setting `this`.
     try {
       const fn = decApp.decorator;
       const context: DecoratorContext = { program };
@@ -2350,7 +2441,7 @@ export function createChecker(program: Program): Checker {
 
     for (const propNode of node.properties) {
       if (propNode.kind === SyntaxKind.ProjectionModelProperty) {
-        const prop = evalProjectionModelProperty(propNode);
+        const prop = evalProjectionModelProperty(propNode, modelType);
         if (prop.kind === "Return") {
           return prop;
         }
@@ -2372,7 +2463,8 @@ export function createChecker(program: Program): Checker {
   }
 
   function evalProjectionModelProperty(
-    node: ProjectionModelPropertyNode
+    node: ProjectionModelPropertyNode,
+    model: ModelType
   ): ModelTypeProperty | ReturnRecord {
     const type = evalProjectionNode(node.value);
     if (type.kind === "Return") {
@@ -2386,6 +2478,7 @@ export function createChecker(program: Program): Checker {
       decorators: [],
       optional: node.optional,
       type,
+      model,
     });
   }
 
@@ -2710,6 +2803,13 @@ export function createChecker(program: Program): Checker {
 
         return op(base);
     }
+  }
+
+  /**
+   * @returns true if checker is currently instantiating a template type.
+   */
+  function isInstantiatingTemplateType(): boolean {
+    return instantiatingTemplate !== undefined;
   }
 
   function createFunctionType(fn: (...args: Type[]) => Type): FunctionType {
