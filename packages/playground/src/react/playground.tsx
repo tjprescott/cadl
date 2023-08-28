@@ -48,6 +48,16 @@ export interface PlaygroundProps {
   /** Callback when sample change */
   onSampleNameChange?: (sampleName: string) => void;
 
+  /** Rulesets available */
+  rulesets?: Record<string, string>;
+
+  /** Ruleset to use */
+  rulesetName?: string;
+  /** Default ruleset if leaving this unmanaged. */
+  defaultRulesetName?: string;
+  /** Callback when ruleset change */
+  onRulesetNameChange?: (rulesetName: string) => void;
+
   /** Playground links */
   links?: PlaygroundLinks;
 
