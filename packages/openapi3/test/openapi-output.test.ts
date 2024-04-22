@@ -168,6 +168,72 @@ describe("openapi3: operations", () => {
 
     strictEqual(res.paths["/"].get.deprecated, true);
   });
+
+  it("define operations with `@parameterVisibility`", async () => {
+    const result = await openApiFor(
+      `
+      model VisibilityModel {
+        @visibility("read")
+        readProp: string;
+      
+        @visibility("query")
+        queryProp: int32;
+      
+        @visibility("create")
+        createProp: string[];
+      
+        @visibility("update")
+        updateProp: int32[];
+      
+        @visibility("delete")
+        deleteProp: boolean;
+      }
+      
+      @parameterVisibility("read", "update")
+      @put op putModel(@body input: VisibilityModel): VisibilityModel;`
+    );
+    strictEqual(
+      result.paths["/"].put.requestBody.content["application/json"].schema["$ref"],
+      "#/components/schemas/VisibilityModelReadOrUpdate"
+    );
+    strictEqual(
+      result.paths["/"].put.responses["200"].content["application/json"].schema["$ref"],
+      "#/components/schemas/VisibilityModel"
+    );
+  });
+
+  it("define operations with `@returnTypeVisibility`", async () => {
+    const result = await openApiFor(
+      `
+      model VisibilityModel {
+        @visibility("read")
+        readProp: string;
+      
+        @visibility("query")
+        queryProp: int32;
+      
+        @visibility("create")
+        createProp: string[];
+      
+        @visibility("update")
+        updateProp: int32[];
+      
+        @visibility("delete")
+        deleteProp: boolean;
+      }
+      
+      @returnTypeVisibility("read", "update")
+      @put op putModel(@body input: VisibilityModel): VisibilityModel;`
+    );
+    strictEqual(
+      result.paths["/"].put.requestBody.content["application/json"].schema["$ref"],
+      "#/components/schemas/VisibilityModelCreateOrUpdate"
+    );
+    strictEqual(
+      result.paths["/"].put.responses["200"].content["application/json"].schema["$ref"],
+      "#/components/schemas/VisibilityModelReadOrUpdate"
+    );
+  });
 });
 
 describe("openapi3: request", () => {
