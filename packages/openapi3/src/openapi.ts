@@ -76,6 +76,7 @@ import {
   reportIfNoRoutes,
   resolveAuthentication,
   resolveRequestVisibility,
+  resolveReturnTypeVisibility,
   Visibility,
 } from "@typespec/http";
 import {
@@ -858,7 +859,8 @@ function createOAPIEmitter(
         emitMergedRequestBody(shared.bodies, visibility);
       }
     }
-    emitSharedResponses(shared.responses);
+    const returnTypeVisibility = resolveReturnTypeVisibility(program, shared.operations[0], verb);
+    emitSharedResponses(shared.responses, returnTypeVisibility);
     for (const op of ops) {
       if (isDeprecated(program, op)) {
         currentEndpoint.deprecated = true;
@@ -902,9 +904,10 @@ function createOAPIEmitter(
     currentEndpoint.responses = {};
 
     const visibility = resolveRequestVisibility(program, operation.operation, verb);
+    const returnTypeVisibility = resolveReturnTypeVisibility(program, operation.operation, verb);
     emitEndpointParameters(parameters.parameters, visibility);
     emitRequestBody(parameters.body, visibility);
-    emitResponses(operation.responses);
+    emitResponses(operation.responses, returnTypeVisibility);
     if (authReference) {
       emitEndpointSecurity(authReference);
     }
@@ -914,7 +917,10 @@ function createOAPIEmitter(
     attachExtensions(program, op, currentEndpoint);
   }
 
-  function emitSharedResponses(responses: Map<string, HttpOperationResponse[]>) {
+  function emitSharedResponses(
+    responses: Map<string, HttpOperationResponse[]>,
+    visibility: Visibility
+  ) {
     for (const [statusCode, statusCodeResponses] of responses) {
       if (statusCodeResponses.length === 1) {
         emitResponseObject(statusCode, statusCodeResponses[0]);
@@ -924,7 +930,7 @@ function createOAPIEmitter(
     }
   }
 
-  function emitResponses(responses: HttpOperationResponse[]) {
+  function emitResponses(responses: HttpOperationResponse[], visibility: Visibility) {
     for (const response of responses) {
       for (const statusCode of getOpenAPI3StatusCodes(response.statusCodes, response.type)) {
         emitResponseObject(statusCode, response);

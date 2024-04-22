@@ -3,6 +3,7 @@ import {
   DiagnosticCollector,
   getEffectiveModelType,
   getParameterVisibility,
+  getReturnTypeVisibility,
   isVisible as isVisibleCore,
   Model,
   ModelProperty,
@@ -217,6 +218,23 @@ export function resolveRequestVisibility(
     visibility |= Visibility.Patch;
   }
   return visibility;
+}
+
+/**
+ * Returns the applicable return type visibility or visibilities for the request if `@returnTypeVisibility` was used.
+ * Otherwise, returns the default visibility based on the HTTP verb for the operation.
+ * @param operation The TypeSpec Operation for the request.
+ * @param verb The HTTP verb for the operation.
+ * @returns The applicable parameter visibility or visibilities for the request.
+ */
+export function resolveReturnTypeVisibility(
+  program: Program,
+  operation: Operation,
+  verb: HttpVerb
+): Visibility {
+  const returnTypeVisibility = arrayToVisibility(getReturnTypeVisibility(program, operation));
+  const defaultVisibility = getDefaultVisibilityForVerb(verb);
+  return returnTypeVisibility ?? defaultVisibility;
 }
 
 /**
