@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [{ "path": "../compiler/tsconfig.json" }],
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "tsBuildInfoFile": "temp/tsconfig.tsbuildinfo",
+    "jsx": "react-jsx",
+    "jsxImportSource": "#jsx",
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "generated-defs/**/*.ts", "test/**/*.ts", "src/index.tsx"]
+}
