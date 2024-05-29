@@ -2,6 +2,8 @@ import { SourceNode } from "#jsx/jsx-runtime";
 import { Model, ModelProperty, Operation, Union } from "@typespec/compiler";
 import { EmitOutput, SourceFile } from "./framework/index.js";
 import { Block } from "./typescript/block.js";
+import { Function } from "./typescript/function.js";
+import { ObjectValue } from "./typescript/value.js";
 
 export function $onEmit() {
   const op: Operation = {} as any;
@@ -19,24 +21,40 @@ export function $onEmit() {
 export interface CommandArgParserProps {
   command: Operation;
 }
+declare function $verbatim(code: string): any;
+
 export function CommandArgParser({ command }: CommandArgParserProps) {
-  const options = collectCommandOptions(command).map((option) => (
-    <>
-      {option.name}: <CommandOptions option={option} />
-    </>
-  ));
+  const parseArgsArg: Record<string, any> = {
+    args: $verbatim("args"),
+    tokens: true,
+    strict: true,
+    options: {},
+  };
+
+  for (const option of collectCommandOptions(command)) {
+    const argOptions: Record<string, any> = {};
+    parseArgsArg.options[option.name] = argOptions;
+
+    if (isBoolean(option.type)) {
+      argOptions.type = "boolean";
+    } else {
+      argOptions.type = "string";
+    }
+
+    if (hasShortName(option)) {
+      argOptions.short = getShortName(option);
+    }
+  }
 
   return (
-    <>
-      function parse{command.name}Args(args: string[]){" "}
-      <Block>
+    <Function name={`parse${command.name}Args`}>
+      <Function.Parameters>args: string[]</Function.Parameters>
+      <Function.Body>
         const <Block> tokens </Block> = nodeParseArgs(
-        <Block>
-          args, options: <Block>{options}</Block>, tokens: true, strict: true
-        </Block>
-        )
-      </Block>
-    </>
+        <ObjectValue jsValue={parseArgsArg} />
+        );
+      </Function.Body>
+    </Function>
   );
 }
 
@@ -44,20 +62,6 @@ export function CommandArgParser({ command }: CommandArgParserProps) {
 declare const isBoolean: any;
 declare const hasShortName: any;
 declare const getShortName: any;
-
-function CommandOptions({ option }: { option: ModelProperty }) {
-  const opts = [];
-
-  if (isBoolean(option.type)) {
-    opts.push(<>type: "boolean"</>);
-  } else {
-    opts.push(<>type: "string"</>);
-  }
-
-  if (hasShortName(option)) {
-    opts.push(<>short: "{getShortName(option)}</>);
-  }
-}
 
 function collectCommandOptions(command: Operation): ModelProperty[] {
   const commandOpts: ModelProperty[] = [];
