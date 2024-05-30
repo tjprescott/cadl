@@ -6,7 +6,8 @@
     "rootDir": ".",
     "tsBuildInfoFile": "temp/tsconfig.tsbuildinfo",
     "jsx": "react-jsx",
-    "jsxImportSource": "#jsx"
+    "jsxImportSource": "#jsx",
+    "sourceMap": true
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "generated-defs/**/*.ts", "test/**/*.ts", "test/**/*.tsx", "src/index.tsx", "test/hello.test.tsx"]
 }

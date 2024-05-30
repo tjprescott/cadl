@@ -1,5 +1,5 @@
+import { SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
-import { SourceNode } from "../jsx.js";
 import { Block } from "./block.js";
 export interface FunctionProps {
   operation?: Operation;
@@ -8,18 +8,28 @@ export interface FunctionProps {
 }
 
 export function Function({ operation, name, children }: FunctionProps) {
+  const functionName = name ?? operation!.name;
+  const parameters = operation?.parameters;
   if (!children) {
     return (
       <>
-        function {name ?? operation!.name} (
-        <Function.Parameters parameters={operation!.parameters} />)
+        function {functionName} (
+        <Function.Parameters parameters={parameters} />)
         <Block>
           <Function.Body />
         </Block>
       </>
     );
   }
-  return null;
+
+  // Changed this to handle then the Function actually get the parameters and body as children
+  return (
+    <>
+      function {functionName}(
+      {children?.filter((child) => (child as any).type === Function.Parameters)}){" "}
+      <Block>{children?.filter((child) => (child as any).type === Function.Body)}</Block>
+    </>
+  );
 }
 
 export interface FunctionParametersProps {

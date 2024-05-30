@@ -15,7 +15,7 @@ export function Value({ jsValue, tspValue }: ValueProps) {
     }
   }
 
-  return "Unknown Value";
+  return `"Unknown Value"`;
 }
 
 export interface ObjectValueProps {
@@ -23,11 +23,24 @@ export interface ObjectValueProps {
 }
 export function ObjectValue({ jsValue }: ObjectValueProps) {
   if (jsValue) {
+    const entries = Object.entries(jsValue);
+
+    // Had to do this to be able to render the empty object
+    if (entries.length === 0) {
+      return <>{"{ }"}</>;
+    }
+
     const val = Object.entries(jsValue)
       .map(([key, jsPropValue]) => {
         return <ObjectValue.Property name={key} jsPropertyValue={jsPropValue} />;
       })
-      .reduce((prev, curr) => [prev, ", ", curr]); // no idea why this works, and why join doesn't.
+      .reduce((prev, curr) => {
+        // This prevents a trailing comma
+        if (!prev || prev.length === 0) {
+          return [curr];
+        }
+        return [prev, ", ", curr];
+      }, []); // no idea why this works, and why join doesn't.
 
     return val;
   }
