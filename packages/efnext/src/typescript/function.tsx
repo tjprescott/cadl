@@ -19,6 +19,7 @@ export function Function({ operation, name, children }: FunctionProps) {
       </>
     );
   }
+  return null;
 }
 
 export interface FunctionParametersProps {

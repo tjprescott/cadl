@@ -1,3 +1,1 @@
-model Foo {
-  x: string;
-}
+op Foo(): void;

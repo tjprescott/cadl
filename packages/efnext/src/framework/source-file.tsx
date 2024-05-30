@@ -11,10 +11,5 @@ export function SourceFile({ path, children }: SourceFileProps) {
     }, 1000);
   });
 
-  return (
-    <>
-      File path: {path}
-      {p}
-    </>
-  );
+  return <>{children}</>;
 }

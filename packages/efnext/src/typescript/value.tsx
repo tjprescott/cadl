@@ -12,9 +12,10 @@ export function Value({ jsValue, tspValue }: ValueProps) {
         } else {
           return <ObjectValue jsValue={jsValue} />;
         }
-      // todo: the rest of the cases.
     }
   }
+
+  return "Unknown Value";
 }
 
 export interface ObjectValueProps {
@@ -22,11 +23,13 @@ export interface ObjectValueProps {
 }
 export function ObjectValue({ jsValue }: ObjectValueProps) {
   if (jsValue) {
-    return Object.entries(jsValue)
+    const val = Object.entries(jsValue)
       .map(([key, jsPropValue]) => {
         return <ObjectValue.Property name={key} jsPropertyValue={jsPropValue} />;
       })
       .reduce((prev, curr) => [prev, ", ", curr]); // no idea why this works, and why join doesn't.
+
+    return val;
   }
   return <></>;
 }
