@@ -25,6 +25,9 @@ export function jsxs(component: FunctionComponent, props?: Record<string, any>):
   return createSourceElement(component, props);
 }
 
+export const jsxDEV = jsx;
+export const jsxsDEV = jsxs;
+
 function createSourceElement(
   type: FunctionComponent | string,
   props?: Record<string, any>

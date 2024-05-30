@@ -1,6 +1,6 @@
 import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
 import { EmitContext, Model, ModelProperty, Operation, Union } from "@typespec/compiler";
-import { EmitOutput, SourceFile } from "./framework/index.js";
+import { EmitOutput, SourceFile } from "./framework/components/index.js";
 import { Block } from "./typescript/block.js";
 import { Function } from "./typescript/function.js";
 import { ObjectValue } from "./typescript/value.js";
