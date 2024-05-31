@@ -1,4 +1,4 @@
-interface FunctionComponent {
+export interface FunctionComponent {
   // seems like react lets you just return children here, so even
   // though my instinct is to return SourceNode here, that seems to not work.
   (props: ComponentProps): ComponentChildren;

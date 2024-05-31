@@ -1,4 +1,4 @@
-import assert from "node:assert";
+import assert, { strictEqual } from "node:assert";
 import { describe, it } from "vitest";
 
 import { render } from "../src/framework/core/render.js";
@@ -28,6 +28,7 @@ describe("render", () => {
         assert.deepStrictEqual(rt, ["1"]);
       });
 
+      // NB: I think this should be ignored.
       it("can return false, which is ignored", () => {
         function Test() {
           return false;
@@ -36,27 +37,97 @@ describe("render", () => {
         assert.deepStrictEqual(rt, []);
       });
 
-      it("can return true, which is stringified", () => {
+      it("can return true, which is ignored", () => {
         function Test() {
-          return false;
+          return true;
         }
         const rt = render(<Test />);
-        assert.deepStrictEqual(rt, ["true"]);
+        assert.deepStrictEqual(rt, []);
       });
     });
     //describe("array values", () => {});
-    describe.only("components", () => {
-      function Outer() {
-        return <Inner />;
-      }
+    describe("components", () => {
+      it("can return a single component", () => {
+        function Outer() {
+          return <Inner />;
+        }
 
-      function Inner() {
-        return "hi";
-      }
+        function Inner() {
+          return "hi";
+        }
 
-      const rt = render(<Outer />);
-      console.log(rt);
-      assert(true);
+        const rt = render(<Outer />);
+        assert.deepStrictEqual(rt, [["hi"]]);
+      });
+
+      it("can return a fragment, which doesn't add a node", () => {
+        function Test() {
+          return <><><><br /></></></>
+        }
+
+        console.log(render(<Test />));
+      })
+
+      it("can return multiple component in a fragment", () => {
+        function Test() {
+          return (
+            <>
+              <br />
+              <br />
+            </>
+          );
+        }
+
+        const rt = render(<Test />);
+        assert.deepStrictEqual(rt, [["\n"], ["\n"]]);
+      });
+
+      it("renders non-SourceNode children properly", () => {
+        function Test() {
+          return <>
+            hello
+            <Foo>
+              <Bar />
+              <Bar />
+            </Foo>
+          </>
+        }
+
+        function Foo({children}: any) {
+          return children;
+        }
+
+        function Bar() {
+          return "bar";
+        }
+
+        const rt = render(<Test />);
+        assert.deepStrictEqual(rt, ["hello", [["bar"], ["bar"]]]);
+      })
+
+      it("renders SourceNode children properly", () => {
+        function Test() {
+          return <>
+            hello
+            <Foo>
+              <Bar />
+              <Bar />
+            </Foo>
+          </>
+        }
+
+        function Foo({children}: any) {
+          return <><lb />{children}<rb/></>;
+        }
+
+        function Bar() {
+          return <br />;
+        }
+
+        const rt = render(<Test />);
+        console.log(JSON.stringify(rt, null, 4));
+      })
+
     });
   });
 });
