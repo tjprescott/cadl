@@ -24,7 +24,7 @@ export function render(root: SourceNode): RenderedTreeNode {
 
   children = children.flat(Infinity);
 
-  for (const [index, child] of children.entries()) {
+  for (const child of children) {
     if (isSourceNode(child)) {
       const childRender = render(child);
       node.push(childRender);
