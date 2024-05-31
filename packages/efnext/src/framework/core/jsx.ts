@@ -9,7 +9,14 @@ export interface SourceNode {
   props: ComponentProps;
 }
 
-export type ComponentChild = SourceNode | string | number | boolean | null | undefined;
+export type ComponentChild =
+  | SourceNode
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Promise<string>;
 export type ComponentChildren = ComponentChild | ComponentChild[];
 export type ComponentProps = Record<string, any> & { children?: ComponentChildren };
 

@@ -1,4 +1,4 @@
-import { ComponentChild, Fragment, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
+import { ComponentChild, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
 
 type RenderedTreeNode = (string | RenderedTreeNode)[];
 
@@ -14,7 +14,8 @@ export function render(root: SourceNode): RenderedTreeNode {
   }
 
   assertIsFunctionComponent(root);
-  const node: RenderedTreeNode = [root.type.name];
+  const node: RenderedTreeNode = [];
+  const backup = node;
   let children = root.type(root.props);
 
   if (!Array.isArray(children)) {
@@ -26,11 +27,12 @@ export function render(root: SourceNode): RenderedTreeNode {
   for (const [index, child] of children.entries()) {
     if (isSourceNode(child)) {
       const childRender = render(child);
-      if (child.type === Fragment) {
-        node.push(...childRender);
-      } else {
-        node.push(childRender);
-      }
+      node.push(childRender);
+    } else if (child instanceof Promise) {
+      const index = node.push("{ pending }");
+      child.then((v) => {
+        node[index - 1] = v;
+      });
     } else if (child === undefined || child === null || typeof child === "boolean") {
       continue;
     } else {

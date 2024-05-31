@@ -1,7 +1,8 @@
 import assert, { strictEqual } from "node:assert";
 import { describe, it } from "vitest";
-
+import { setTimeout } from "node:timers/promises"
 import { render } from "../src/framework/core/render.js";
+import { resolve } from "node:path";
 
 describe("render", () => {
   describe("component return types", () => {
@@ -129,5 +130,18 @@ describe("render", () => {
       })
 
     });
+
+    describe("async components", () => {
+      it("can handle promises for strings", async () => {
+        const p = setTimeout(10, "hi!");
+        function Foo() {
+          return <>{p} there!</>
+        }
+
+        const rt = render(<Foo />);
+        await p;
+        assert.deepStrictEqual(rt, [ [ "hi!", " there!"]]);
+      });
+    })
   });
 });
