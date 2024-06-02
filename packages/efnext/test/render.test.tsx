@@ -141,6 +141,18 @@ describe("render", () => {
         await p;
         assert.deepStrictEqual(rt, [ [ "hi!", " there!"]]);
       });
+
+      it("works with async function components", async () => {
+        const p = setTimeout(10, "hi!");
+        async function Foo() {
+          await p;
+          return <>{p} there!</>
+        }
+
+        const rt = render(<Foo />);
+        await setTimeout(11); // terrible, need a way to await the tree being settled.
+        assert.deepStrictEqual(rt, [ [ "hi!", " there!"]]);
+      });
     })
   });
 });

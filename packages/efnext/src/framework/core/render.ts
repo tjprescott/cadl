@@ -1,4 +1,4 @@
-import { ComponentChild, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
+import { ComponentChild, ComponentChildren, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
 import { MetaNode, getMeta } from "./metatree.js";
 
 export interface RenderContext {
@@ -39,7 +39,20 @@ export function render(root: SourceNode): RenderedTreeNode {
   };
 
   let children = root.type(root.props);
+  if (children instanceof Promise) {
+    children.then((children) => {
+      handleChildren(node, children);
+    });
+  } else {
+    handleChildren(node, children);
+  }
 
+  renderContext = oldContext;
+
+  return node;
+}
+
+function handleChildren(node: RenderedTreeNode, children: ComponentChildren) {
   if (!Array.isArray(children)) {
     children = [children];
   }
@@ -61,12 +74,7 @@ export function render(root: SourceNode): RenderedTreeNode {
       node.push(String(child));
     }
   }
-
-  renderContext = oldContext;
-
-  return node;
 }
-
 function isIntrinsicComponent(node: SourceNode): node is SourceNode & { type: string } {
   return typeof node.type === "string";
 }
