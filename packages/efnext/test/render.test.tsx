@@ -1,8 +1,7 @@
-import assert, { strictEqual } from "node:assert";
+import assert from "node:assert";
 import { describe, it } from "vitest";
 import { setTimeout } from "node:timers/promises"
 import { render } from "../src/framework/core/render.js";
-import { resolve } from "node:path";
 
 describe("render", () => {
   describe("component return types", () => {

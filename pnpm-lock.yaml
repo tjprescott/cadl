@@ -334,6 +334,9 @@ importers:
 
   packages/efnext:
     dependencies:
+      prettier:
+        specifier: ~3.2.5
+        version: 3.2.5
       yaml:
         specifier: ~2.4.2
         version: 2.4.2

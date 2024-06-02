@@ -1,6 +1,8 @@
 import { SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
 import { Block } from "./block.js";
+import { Declaration } from "../framework/components/declaration.js";
+import { Scope } from "../framework/components/scope.js";
 export interface FunctionProps {
   operation?: Operation;
   name?: string;
@@ -8,27 +10,40 @@ export interface FunctionProps {
 }
 
 export function Function({ operation, name, children }: FunctionProps) {
+  // todo: take an Operation type and emit an empty function based on that.
   const functionName = name ?? operation!.name;
   const parameters = operation?.parameters;
   if (!children) {
     return (
-      <>
+      <Declaration name={functionName} refkey={operation?.name ?? functionName}>
         function {functionName} (
         <Function.Parameters parameters={parameters} />)
         <Block>
           <Function.Body />
         </Block>
-      </>
+      </Declaration>
     );
   }
 
-  // Changed this to handle then the Function actually get the parameters and body as children
+  const parametersChild = children?.find((child) => (child as any).type === Function.Parameters);
+  const bodyChild = children?.find((child) => (child as any).type === Function.Body);
+  if (!parametersChild && !bodyChild) {
+    // the direct children are the body...
+    return <Declaration name={functionName} refkey={operation?.name ?? functionName}>
+      function {functionName}()
+      <Block>{children}</Block>
+    </Declaration>
+  }
   return (
-    <>
+    <Declaration name={functionName} refkey={operation?.name ?? functionName}>
       function {functionName}(
-      {children?.filter((child) => (child as any).type === Function.Parameters)}){" "}
-      <Block>{children?.filter((child) => (child as any).type === Function.Body)}</Block>
-    </>
+      {parametersChild}){" "}
+      <Block>
+        <Scope name={functionName}>
+          {bodyChild}
+        </Scope>
+      </Block>
+    </Declaration>
   );
 }
 

@@ -1,6 +1,21 @@
 import { ComponentChild, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
+import { MetaNode, getMeta } from "./metatree.js";
 
-type RenderedTreeNode = (string | RenderedTreeNode)[];
+export interface RenderContext {
+  node?: RenderedTreeNode;
+  meta?: MetaNode;
+}
+
+let renderContext: RenderContext = {
+  node: undefined,
+  meta: undefined,
+};
+
+export function getRenderContext() {
+  return renderContext;
+}
+
+export type RenderedTreeNode = (string | RenderedTreeNode)[];
 
 const intrinsicMap: Record<string, string> = {
   rb: "}",
@@ -15,7 +30,14 @@ export function render(root: SourceNode): RenderedTreeNode {
 
   assertIsFunctionComponent(root);
   const node: RenderedTreeNode = [];
-  const backup = node;
+  const meta = getMeta(node);
+  meta.parent = renderContext.meta;
+  const oldContext = renderContext;
+  renderContext = {
+    meta,
+    node,
+  };
+
   let children = root.type(root.props);
 
   if (!Array.isArray(children)) {
@@ -39,6 +61,8 @@ export function render(root: SourceNode): RenderedTreeNode {
       node.push(String(child));
     }
   }
+
+  renderContext = oldContext;
 
   return node;
 }

@@ -1,5 +1,12 @@
-import { SourceNode } from "#jsx/jsx-runtime";
+import { ComponentChildren } from "#jsx/jsx-runtime";
+import { BinderContext, createOutputBinder } from "../core/binder.js";
 
-export function EmitOutput({ children }: { children?: SourceNode[] }) {
-  return <>{children}</>;
+export interface EmitOutputProps {
+  children?: ComponentChildren
+}
+export function EmitOutput({ children }: EmitOutputProps) {
+  const binder = createOutputBinder();
+  return <BinderContext.Provider value={binder}>
+    {children}
+  </BinderContext.Provider>
 }
