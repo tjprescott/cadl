@@ -1,4 +1,5 @@
 import { ComponentChild, ComponentChildren, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
+import { setImmediate } from "node:timers/promises";
 import { MetaNode, getMeta } from "./metatree.js";
 
 export interface RenderContext {
@@ -23,7 +24,18 @@ const intrinsicMap: Record<string, string> = {
   br: "\n",
 };
 
-export function render(root: SourceNode): RenderedTreeNode {
+export async function render(root: SourceNode): Promise<RenderedTreeNode> {
+  // todo: check for forward progress.
+  // I /think/ this should work to ensure render doesn't resolve until
+  // all async work called from render finishes. But, it won't work
+  // for any async work that is queued as a result of an resolution.
+
+  const res = renderWorker(root);
+  await setImmediate();
+
+  return res;
+}
+function renderWorker(root: SourceNode): RenderedTreeNode {
   if (isIntrinsicComponent(root)) {
     return [intrinsicMap[root.type]];
   }
@@ -61,7 +73,7 @@ function handleChildren(node: RenderedTreeNode, children: ComponentChildren) {
 
   for (const child of children) {
     if (isSourceNode(child)) {
-      const childRender = render(child);
+      const childRender = renderWorker(child);
       node.push(childRender);
     } else if (child instanceof Promise) {
       const index = node.push("{ pending }");
@@ -75,6 +87,7 @@ function handleChildren(node: RenderedTreeNode, children: ComponentChildren) {
     }
   }
 }
+
 function isIntrinsicComponent(node: SourceNode): node is SourceNode & { type: string } {
   return typeof node.type === "string";
 }

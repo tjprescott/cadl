@@ -13,17 +13,30 @@ export interface Scope {
   children: Map<string, Scope>;
   parent: Scope | undefined;
   binder: Binder;
+  meta: any;
 }
 
 export const BinderContext = createContext<Binder>();
 
 export interface Binder {
-  createScope(name: string, parent: Scope | undefined): Scope;
+  createScope(name: string, parent: Scope | undefined, meta?: unknown): Scope;
   createDeclaration(name: string, scope?: Scope, refkey?: unknown): void;
-  resolveDeclarationByKey(currentScope: Scope, refkey: unknown): ResolutionResult;
+  resolveDeclarationByKey(
+    currentScope: Scope,
+    refkey: unknown
+  ): ResolutionResult | ResolutionFailure;
+  resolveOrWaitForDeclaration(
+    currentScope: Scope,
+    refkey: unknown
+  ): Promise<ResolutionResult | ResolutionFailure>;
+}
+
+export interface ResolutionFailure {
+  resolved: false;
 }
 
 export interface ResolutionResult {
+  resolved: true;
   targetDeclaration: OutputDeclaration;
   pathUp: Scope[];
   pathDown: Scope[];
@@ -35,6 +48,7 @@ export function createOutputBinder(): Binder {
     createScope,
     createDeclaration,
     resolveDeclarationByKey,
+    resolveOrWaitForDeclaration,
   };
 
   const globalScope: Scope = {
@@ -44,13 +58,14 @@ export function createOutputBinder(): Binder {
     children: new Map(),
     parent: undefined,
     binder,
+    meta: {},
   };
 
   const knownDeclarations = new Map<unknown, OutputDeclaration>();
-
+  const waitingDeclarations = new Map<unknown, ((value: unknown) => void)[]>();
   return binder;
 
-  function createScope(name: string, parent: Scope = globalScope): Scope {
+  function createScope(name: string, parent: Scope = globalScope, meta?: unknown): Scope {
     const scope = {
       name,
       bindings: new Map(),
@@ -58,6 +73,7 @@ export function createOutputBinder(): Binder {
       children: new Map(),
       parent,
       binder,
+      meta,
     };
 
     if (parent) {
@@ -77,14 +93,24 @@ export function createOutputBinder(): Binder {
     const targetScope = scope ? scope : globalScope;
     targetScope.bindings.set(name, declaration);
     knownDeclarations.set(refkey, declaration);
+    if (waitingDeclarations.has(refkey)) {
+      const cbs = waitingDeclarations.get(refkey)!;
+      for (const cb of cbs) {
+        console.log("Resolving for", (refkey as any).name);
+        cb(declaration);
+      }
+    }
     return declaration;
   }
 
   // todo: handle key not yet found because its yet to be declared
-  function resolveDeclarationByKey(currentScope: Scope, key: unknown) {
+  function resolveDeclarationByKey(
+    currentScope: Scope,
+    key: unknown
+  ): ResolutionFailure | ResolutionResult {
     const targetDeclaration = knownDeclarations.get(key);
     if (!targetDeclaration) {
-      throw new Error("Declaration must exist to be referenced");
+      return { resolved: false };
     }
     const targetScope = targetDeclaration.scope;
     const targetChain = scopeChain(targetScope);
@@ -102,7 +128,26 @@ export function createOutputBinder(): Binder {
     const pathDown = targetChain.slice(diffStart);
     const commonScope = targetChain[diffStart - 1] ?? null;
 
-    return { pathUp, pathDown, commonScope, targetDeclaration };
+    return { resolved: true, pathUp, pathDown, commonScope, targetDeclaration };
+  }
+
+  async function resolveOrWaitForDeclaration(scope: Scope, refkey: unknown) {
+    if (!knownDeclarations.has(refkey)) {
+      await declarationAvailable(refkey);
+    }
+
+    return resolveDeclarationByKey(scope, refkey);
+  }
+
+  function declarationAvailable(refkey: unknown) {
+    if (!waitingDeclarations.has(refkey)) {
+      waitingDeclarations.set(refkey, []);
+    }
+
+    const waitingList = waitingDeclarations.get(refkey);
+    return new Promise((resolve) => {
+      waitingList?.push(resolve);
+    });
   }
 
   function scopeChain(scope: Scope | undefined) {

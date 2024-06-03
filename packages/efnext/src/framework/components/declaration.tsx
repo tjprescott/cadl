@@ -7,7 +7,7 @@ const DeclarationContext = createContext<OutputDeclaration>();
 
 export interface DeclarationProps {
   name: string;
-  refkey?: string;
+  refkey?: unknown;
   children?: ComponentChildren;
 }
 export function Declaration({ name, children, refkey}: DeclarationProps) {

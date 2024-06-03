@@ -1,4 +1,4 @@
-import { Diagnostic, resolvePath } from "@typespec/compiler";
+import { Diagnostic, Program, resolvePath } from "@typespec/compiler";
 import {
   createTestHost,
   createTestWrapper,
@@ -44,4 +44,16 @@ export async function emit(code: string): Promise<Record<string, string>> {
   const [result, diagnostics] = await emitWithDiagnostics(code);
   expectDiagnosticEmpty(diagnostics);
   return result;
+}
+
+export async function getProgram(code: string): Promise<Program> {
+  const host = await createTypespecCliTestHost();
+  const wrapper = createTestWrapper(host, {
+    compilerOptions: {
+      noEmit: true,
+    },
+  });
+  const [_, diagnostics] = await wrapper.compileAndDiagnose(code);
+  expectDiagnosticEmpty(diagnostics);
+  return wrapper.program;
 }
