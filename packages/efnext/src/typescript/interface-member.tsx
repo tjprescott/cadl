@@ -1,12 +1,25 @@
-import { ModelProperty } from "@typespec/compiler";
+import { ModelProperty, Operation } from "@typespec/compiler";
+import { isModelProperty, isOperation } from "../framework/utils/typeguards.js";
 import { TypeExpression } from "./type-expression.js";
 
 export interface InterfaceMemberProps {
-  type: ModelProperty;
+  type: ModelProperty | Operation;
 }
 
 export function InterfaceMember({ type }: InterfaceMemberProps) {
-  return <>
-    {type.name}: <TypeExpression type={type.type} />;
-  </>
+  if (isModelProperty(type)) {
+    return (
+      <>
+        {type.name}: <TypeExpression type={type.type} />;
+      </>
+    );
+  }
+
+  if (isOperation(type)) {
+    return (
+      <>
+        {type.name}(): <TypeExpression type={type.returnType} />;
+      </>
+    );
+  }
 }

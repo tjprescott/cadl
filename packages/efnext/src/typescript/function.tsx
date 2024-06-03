@@ -1,8 +1,10 @@
 import { SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
-import { Block } from "./block.js";
 import { Declaration } from "../framework/components/declaration.js";
 import { Scope } from "../framework/components/scope.js";
+import { Block } from "./block.js";
+import { TypeExpression } from "./type-expression.js";
+
 export interface FunctionProps {
   operation?: Operation;
   name?: string;
@@ -13,11 +15,20 @@ export function Function({ operation, name, children }: FunctionProps) {
   // todo: take an Operation type and emit an empty function based on that.
   const functionName = name ?? operation!.name;
   const parameters = operation?.parameters;
+  // Gets the return type of the function
+  const typeExpression = operation?.returnType ? (
+    <>
+      : <TypeExpression type={operation.returnType} />
+    </>
+  ) : (
+    <></>
+  );
+
   if (!children) {
     return (
       <Declaration name={functionName} refkey={operation?.name ?? functionName}>
         function {functionName} (
-        <Function.Parameters parameters={parameters} />)
+        <Function.Parameters parameters={parameters} />){typeExpression}
         <Block>
           <Function.Body />
         </Block>
@@ -29,19 +40,18 @@ export function Function({ operation, name, children }: FunctionProps) {
   const bodyChild = children?.find((child) => (child as any).type === Function.Body);
   if (!parametersChild && !bodyChild) {
     // the direct children are the body...
-    return <Declaration name={functionName} refkey={operation?.name ?? functionName}>
-      function {functionName}()
-      <Block>{children}</Block>
-    </Declaration>
+    return (
+      <Declaration name={functionName} refkey={operation?.name ?? functionName}>
+        function {functionName}(){typeExpression}
+        <Block>{children}</Block>
+      </Declaration>
+    );
   }
   return (
     <Declaration name={functionName} refkey={operation?.name ?? functionName}>
-      function {functionName}(
-      {parametersChild}){" "}
+      function {functionName}({parametersChild}){typeExpression}
       <Block>
-        <Scope name={functionName}>
-          {bodyChild}
-        </Scope>
+        <Scope name={functionName}>{bodyChild}</Scope>
       </Block>
     </Declaration>
   );

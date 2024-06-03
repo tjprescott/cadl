@@ -1,25 +1,22 @@
-import { Model } from "@typespec/compiler";
+import { Interface, Model } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
-import { Block } from "./block.js";
-import { Reference } from "./reference.js";
-import { InterfaceMember } from "./interface-member.js";
+import { isModel } from "../framework/utils/typeguards.js";
 import { InterfaceExpression } from "./interface-expression.js";
+import { Reference } from "./reference.js";
 
 export interface InterfaceDeclarationProps {
-  type: Model;
+  type: Model | Interface;
 }
 
 export function InterfaceDeclaration({ type }: InterfaceDeclarationProps) {
-  const extendsClause = type.baseModel ? (
-    <>
-      extends <Reference refkey={type.baseModel} />
-    </>
-  ) : undefined;
+  let extendsClause = undefined;
 
-  const members = [];
-  
-  for (const prop of type.properties.values()) {
-    members.push(<InterfaceMember type={prop} />)
+  if (isModel(type) && type.baseModel) {
+    extendsClause = (
+      <>
+        extends <Reference refkey={type.baseModel} />
+      </>
+    );
   }
 
   return (
