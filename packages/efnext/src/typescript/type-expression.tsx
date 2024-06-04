@@ -5,6 +5,7 @@ import { InterfaceExpression } from "./interface-expression.js";
 import { RecordExpression } from "./record-expression.js";
 import { Reference } from "./reference.js";
 import { TypeLiteral } from "./type-literal.js";
+import { UnionExpression } from "./union-expression.js";
 
 export interface TypeExpressionProps {
   type: Type;
@@ -24,6 +25,8 @@ export function TypeExpression({ type }: TypeExpressionProps) {
     case "Number":
     case "String":
       return <TypeLiteral type={type} />;
+    case "Union":
+      return <UnionExpression type={type} />;
     case "Model":
       if (isArray(type)) {
         const elementType = type.indexer.value;

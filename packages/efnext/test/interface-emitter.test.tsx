@@ -5,6 +5,7 @@ import { EmitOutput } from "../src/framework/components/emit-output.js";
 import { SourceFile } from "../src/framework/components/source-file.js";
 import { RenderedTreeNode, render } from "../src/framework/core/render.js";
 import { InterfaceDeclaration } from "../src/typescript/interface-declaration.js";
+import { TypeDeclaration } from "../src/typescript/type-declaration.js";
 import { getProgram } from "./test-host.js";
 async function print(root: RenderedTreeNode) {
   const raw = (root as any).flat(Infinity).join("");
@@ -25,7 +26,7 @@ describe("e2e", () => {
     model Widget {
       id: string;
       weight: int32;
-      color: "red";
+      color: "red" | "blue";
     }
 
     model Error {
@@ -36,17 +37,24 @@ describe("e2e", () => {
 
     interface Widgets {
       list(): Widget[];
-      read(id: string): Widget;
+      read(id: string): Widget | Error;
       create(...Widget): Widget;
       update(...Widget): Widget;
       delete(id: string): void;
-      analyze(id: string): string;
+      analyze(id: string): MyUnion;
+    }
+
+    union MyUnion {
+      Red: "red",
+      Blue: "blue",
     }
   `);
 
     const [namespace] = program.resolveTypeReference("DemoService");
     const interfaces = Array.from((namespace as Namespace).interfaces.values());
     const models = Array.from((namespace as Namespace).models.values());
+    const unions = Array.from((namespace as Namespace).unions.values());
+    const typeDeclarations = [...models, ...unions];
 
     let res = await render(
       <EmitOutput>
@@ -54,8 +62,8 @@ describe("e2e", () => {
           {interfaces.map((iface) => (
             <InterfaceDeclaration type={iface} />
           ))}
-          {models.map((model) => (
-            <InterfaceDeclaration type={model} />
+          {typeDeclarations.map((type) => (
+            <TypeDeclaration type={type} />
           ))}
         </SourceFile>
       </EmitOutput>
