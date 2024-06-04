@@ -26,27 +26,26 @@ describe("e2e", () => {
     model Widget {
       id: string;
       weight: int32;
-      color: "red" | "blue";
+      color: Color;
     }
-
+    
     model Error {
       code: int32;
       message: string;
-      foo: Record<int32>;
     }
-
+    
     interface Widgets {
-      list(): Widget[];
+      list(): Widget[] | Error;
       read(id: string): Widget | Error;
-      create(...Widget): Widget;
-      update(...Widget): Widget;
-      delete(id: string): void;
-      analyze(id: string): MyUnion;
+      create(...Widget): Widget | Error;
+      update(...Widget): Widget | Error;
+      delete(id: string): void | Error;
+      analyze(id: string): string | Error;
     }
 
-    union MyUnion {
-      Red: "red",
-      Blue: "blue",
+    union Color {
+      Red: "red";
+      Blue: "blue";
     }
   `);
 
