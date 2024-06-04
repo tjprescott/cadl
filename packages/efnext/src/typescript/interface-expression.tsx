@@ -1,19 +1,25 @@
-import { Model } from "@typespec/compiler";
+import { Interface, Model, ModelProperty, Operation } from "@typespec/compiler";
+import { isInterface, isModel } from "../framework/utils/typeguards.js";
 import { Block } from "./block.js";
 import { InterfaceMember } from "./interface-member.js";
 
 export interface InterfaceExpressionProps {
-  type: Model;
+  type: Model | Interface;
 }
 
-export function InterfaceExpression({type}: InterfaceExpressionProps) {
+export function InterfaceExpression({ type }: InterfaceExpressionProps) {
   const members = [];
-  
-  for (const prop of type.properties.values()) {
-    members.push(<InterfaceMember type={prop} />)
+  let typeMembers: IterableIterator<ModelProperty | Operation> | undefined;
+
+  if (isModel(type)) {
+    typeMembers = type.properties.values();
+  } else if (isInterface(type)) {
+    typeMembers = type.operations.values();
   }
 
-  return <Block>
-    {members}
-  </Block>
+  for (const prop of typeMembers ?? []) {
+    members.push(<InterfaceMember type={prop} />);
+  }
+
+  return <Block>{members}</Block>;
 }
