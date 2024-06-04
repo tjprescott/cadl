@@ -31,6 +31,7 @@ describe("e2e", () => {
     model Error {
       code: int32;
       message: string;
+      foo: Record<int32>;
     }
 
     interface Widgets {
@@ -46,7 +47,6 @@ describe("e2e", () => {
     const [namespace] = program.resolveTypeReference("DemoService");
     const interfaces = Array.from((namespace as Namespace).interfaces.values());
     const models = Array.from((namespace as Namespace).models.values());
-    console.log(interfaces.map((i) => i.kind));
 
     let res = await render(
       <EmitOutput>

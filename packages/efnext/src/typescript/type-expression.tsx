@@ -1,5 +1,8 @@
-import { IntrinsicType, ModelIndexer, Scalar, Type } from "@typespec/compiler";
+import { IntrinsicType, Model, Scalar, Type } from "@typespec/compiler";
+import { isArray, isDeclaration, isRecord } from "../framework/utils/typeguards.js";
+import { ArrayExpression } from "./array-expression.js";
 import { InterfaceExpression } from "./interface-expression.js";
+import { RecordExpression } from "./record-expression.js";
 import { Reference } from "./reference.js";
 import { TypeLiteral } from "./type-literal.js";
 
@@ -8,33 +11,32 @@ export interface TypeExpressionProps {
 }
 
 export function TypeExpression({ type }: TypeExpressionProps) {
-  const arraySuffix = isArrayType(type) ? "[]" : "";
-  const resolvedType = isArrayType(type) ? type.indexer.value : type;
-
-  if ("name" in resolvedType && resolvedType.name) {
-    if (isScalarOrIntrinsicType(resolvedType)) {
-      return (
-        <>
-          {getScalarIntrinsicExpression(resolvedType)}
-          {arraySuffix}
-        </>
-      );
-    }
-    return (
-      <>
-        <Reference refkey={resolvedType} />
-        {arraySuffix}
-      </>
-    );
+  if (isDeclaration(type) && !(type as Model).indexer) {
+    console.log("TypeExpression:", type.name);
+    return <Reference refkey={type} />;
   }
 
   switch (type.kind) {
+    case "Scalar":
+    case "Intrinsic":
+      return <>{getScalarIntrinsicExpression(type)}</>;
     case "Boolean":
     case "Number":
     case "String":
       return <TypeLiteral type={type} />;
     case "Model":
+      if (isArray(type)) {
+        const elementType = type.indexer.value;
+        return <ArrayExpression elementType={elementType} />;
+      }
+
+      if (isRecord(type)) {
+        const elementType = type.indexer.value;
+        return <RecordExpression elementType={elementType} />;
+      }
+
       return <InterfaceExpression type={type} />;
+
     default:
       throw new Error(type.kind + " not supported in TypeExpression");
   }
@@ -59,12 +61,4 @@ function getScalarIntrinsicExpression(type: Scalar | IntrinsicType): string {
     throw new Error(`Unknown scalar type ${type.name}`);
   }
   return tsType;
-}
-
-function isArrayType(type: Type): type is Type & { indexer: ModelIndexer } {
-  return "indexer" in type && type.indexer !== undefined;
-}
-
-function isScalarOrIntrinsicType(type: Type): type is Scalar | IntrinsicType {
-  return type.kind === "Scalar" || type.kind === "Intrinsic";
 }
