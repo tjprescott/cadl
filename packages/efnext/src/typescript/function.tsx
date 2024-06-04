@@ -66,8 +66,20 @@ Function.Parameters = function Parameters({ parameters, children }: FunctionPara
   if (children) {
     return children;
   } else {
-    return <></>;
-    // do the default thing.
+    const params = Array.from(parameters?.properties.values() ?? []);
+    return (
+      <>
+        {params.map((param, index) => {
+          const isLast = index === params.length - 1;
+          return (
+            <>
+              {param.name}: <TypeExpression type={param.type} />
+              {!isLast ? ", " : ""}
+            </>
+          );
+        })}
+      </>
+    );
   }
 };
 
