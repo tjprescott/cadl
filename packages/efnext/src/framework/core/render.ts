@@ -1,6 +1,7 @@
 import { ComponentChild, ComponentChildren, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
 import { setImmediate } from "node:timers/promises";
 import { MetaNode, getMeta } from "./metatree.js";
+import { notifyResolved } from "./use-resolved.js";
 
 export interface RenderContext {
   node?: RenderedTreeNode;
@@ -32,10 +33,11 @@ export async function render(root: SourceNode): Promise<RenderedTreeNode> {
 
   const res = renderWorker(root);
   await setImmediate();
+  await notifyResolved();
 
   return res;
 }
-function renderWorker(root: SourceNode): RenderedTreeNode {
+export function renderWorker(root: SourceNode): RenderedTreeNode {
   if (isIntrinsicComponent(root)) {
     return [intrinsicMap[root.type]];
   }

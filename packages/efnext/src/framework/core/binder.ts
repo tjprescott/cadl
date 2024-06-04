@@ -6,8 +6,8 @@ export interface OutputDeclaration {
   refkey: unknown;
 }
 
-export interface Scope {
-  name: string;
+export interface ScopeBase {
+  kind: string;
   bindings: Map<string, OutputDeclaration>;
   bindingsByKey: Map<unknown, OutputDeclaration>;
   children: Map<string, Scope>;
@@ -16,17 +16,42 @@ export interface Scope {
   meta: any;
 }
 
+// could include package scope
+export type Scope = LocalScope | ModuleScope | GlobalScope;
+
+export interface LocalScope extends ScopeBase {
+  kind: "local";
+  name: string;
+  parent: Scope;
+  children: Map<string, LocalScope>;
+}
+
+export interface ModuleScope extends ScopeBase {
+  kind: "module";
+  path: string;
+  /** could probably grow to include namespace etc. */
+  children: Map<string, LocalScope | ModuleScope>;
+  parent: GlobalScope; // dunno if modules should be able to nest...
+}
+
+export interface GlobalScope extends ScopeBase {
+  kind: "global";
+  parent: undefined;
+  children: Map<string, ModuleScope | LocalScope>;
+}
+
 export const BinderContext = createContext<Binder>();
 
 export interface Binder {
-  createScope(name: string, parent: Scope | undefined, meta?: unknown): Scope;
-  createDeclaration(name: string, scope?: Scope, refkey?: unknown): void;
+  createLocalScope(name: string, parent: LocalScope | undefined, meta?: unknown): LocalScope;
+  createModuleScope(path: string, meta?: unknown): ModuleScope;
+  createDeclaration(name: string, scope?: LocalScope, refkey?: unknown): void;
   resolveDeclarationByKey(
-    currentScope: Scope,
+    currentScope: LocalScope,
     refkey: unknown
   ): ResolutionResult | ResolutionFailure;
   resolveOrWaitForDeclaration(
-    currentScope: Scope,
+    currentScope: LocalScope,
     refkey: unknown
   ): Promise<ResolutionResult | ResolutionFailure>;
 }
@@ -45,14 +70,15 @@ export interface ResolutionResult {
 
 export function createOutputBinder(): Binder {
   const binder: Binder = {
-    createScope,
+    createLocalScope,
+    createModuleScope,
     createDeclaration,
     resolveDeclarationByKey,
     resolveOrWaitForDeclaration,
   };
 
-  const globalScope: Scope = {
-    name: "<global>",
+  const globalScope: GlobalScope = {
+    kind: "global",
     bindings: new Map(),
     bindingsByKey: new Map(),
     children: new Map(),
@@ -65,8 +91,9 @@ export function createOutputBinder(): Binder {
   const waitingDeclarations = new Map<unknown, ((value: unknown) => void)[]>();
   return binder;
 
-  function createScope(name: string, parent: Scope = globalScope, meta?: unknown): Scope {
-    const scope = {
+  function createLocalScope(name: string, parent: Scope = globalScope, meta?: unknown): LocalScope {
+    const scope: LocalScope = {
+      kind: "local",
       name,
       bindings: new Map(),
       bindingsByKey: new Map(),
@@ -79,6 +106,23 @@ export function createOutputBinder(): Binder {
     if (parent) {
       parent.children.set(name, scope);
     }
+
+    return scope;
+  }
+
+  function createModuleScope(path: string, meta?: unknown): ModuleScope {
+    const scope: ModuleScope = {
+      kind: "module",
+      path,
+      bindings: new Map(),
+      bindingsByKey: new Map(),
+      children: new Map(),
+      parent: globalScope,
+      binder,
+      meta,
+    };
+
+    globalScope.children.set(path, scope);
 
     return scope;
   }
@@ -105,7 +149,7 @@ export function createOutputBinder(): Binder {
 
   // todo: handle key not yet found because its yet to be declared
   function resolveDeclarationByKey(
-    currentScope: Scope,
+    currentScope: LocalScope,
     key: unknown
   ): ResolutionFailure | ResolutionResult {
     const targetDeclaration = knownDeclarations.get(key);
@@ -131,7 +175,7 @@ export function createOutputBinder(): Binder {
     return { resolved: true, pathUp, pathDown, commonScope, targetDeclaration };
   }
 
-  async function resolveOrWaitForDeclaration(scope: Scope, refkey: unknown) {
+  async function resolveOrWaitForDeclaration(scope: LocalScope, refkey: unknown) {
     if (!knownDeclarations.has(refkey)) {
       await declarationAvailable(refkey);
     }

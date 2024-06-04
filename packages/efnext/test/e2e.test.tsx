@@ -8,19 +8,10 @@ import { format } from "prettier";
 import { getProgram } from "./test-host.js";
 import { TypeDeclaration } from "../src/typescript/type-declaration.js";
 import { setTimeout, setImmediate } from "node:timers/promises"
-async function print(root: RenderedTreeNode) {
-  const raw = (root as any).flat(Infinity).join("");
-
-  try {
-    console.log(await format(raw, { parser: "typescript"}));
-  } catch (e) {
-    console.error("Formatting error", e);
-    console.log(raw);
-  }
-}
+import { print } from "./utils.js";
 
 describe("e2e", () => {
-  it("example", async () => {
+  it.only("example", async () => {
     let res = await render(
       <EmitOutput>
         <SourceFile path="test.ts">

@@ -11,7 +11,7 @@ describe("Scope component", () => {
       const currentScope = useContext(ScopeContext);
       assert(currentScope);
       assert.equal(currentScope.name, "test");
-      assert.equal(currentScope.parent!.name, "<global>");
+      assert.equal(currentScope.parent!.kind, "global");
     }
 
     render(<EmitOutput>
@@ -25,8 +25,10 @@ describe("Scope component", () => {
     function Test() {
       const currentScope = useContext(ScopeContext);
       assert(currentScope);
+      assert(currentScope.kind === "local");
+      assert(currentScope.parent.kind === "local");
       assert.equal(currentScope.name, "child");
-      assert.equal(currentScope.parent!.name, "parent");
+      assert.equal(currentScope.parent.name, "parent");
     }
 
     render(<EmitOutput>
