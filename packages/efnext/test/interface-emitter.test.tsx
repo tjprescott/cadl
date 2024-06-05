@@ -181,8 +181,7 @@ describe("e2e typescript interface emitter", () => {
     );
   });
 
-  //TODO: Support enums
-  it.skip("emits enums", async () => {
+  it("emits enums", async () => {
     const contents = await getProgram(`
       enum StringEnum {
         x; y: "hello";
@@ -261,8 +260,7 @@ describe("e2e typescript interface emitter", () => {
     );
   });
 
-  // TODO: Support enum and enumMembers
-  it.skip("emits enum member references", async () => {
+  it("emits enum member references", async () => {
     const contents = await getProgram(`
       enum MyEnum {
         a: "hi";
@@ -278,13 +276,13 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `enum MyEnum {
-        a = "hi",
-        b = "bye"
-      }
-      interface EnumReference {
+      `interface EnumReference {
         prop: MyEnum.a;
         prop2: MyEnum.b;
+      }
+      enum MyEnum {
+        a = "hi",
+        b = "bye"
       }`
     );
   });

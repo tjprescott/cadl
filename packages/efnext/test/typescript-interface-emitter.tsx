@@ -1,5 +1,6 @@
 import { EmitContext, Program } from "@typespec/compiler";
 import { EmitOutput, SourceFile } from "../src/framework/components/index.js";
+import { EnumDeclaration } from "../src/typescript/enum-declaration.js";
 import { Function } from "../src/typescript/function.js";
 import { InterfaceDeclaration } from "../src/typescript/interface-declaration.js";
 import { UnionDeclaration } from "../src/typescript/union-declaration.js";
@@ -14,7 +15,7 @@ export function emitTypescriptInterfaces(program: Program) {
   // const namespaces = [...globalNamespace.namespaces.values()];
   const models = [...globalNamespace.models.values()];
   const operations = [...globalNamespace.operations.values()];
-  // const enums = [...globalNamespace.enums.values()];
+  const enums = [...globalNamespace.enums.values()];
   const unions = [...globalNamespace.unions.values()];
   const interfaces = [...globalNamespace.interfaces.values()];
   // const scalars = [...globalNamespace.scalars.values()];
@@ -27,6 +28,9 @@ export function emitTypescriptInterfaces(program: Program) {
         ))}
         {operations.map((operation) => (
           <Function type={operation} />
+        ))}
+        {enums.map((enumType) => (
+          <EnumDeclaration type={enumType} />
         ))}
         {unions.map((union) => (
           <UnionDeclaration type={union}></UnionDeclaration>
