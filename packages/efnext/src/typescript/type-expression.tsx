@@ -70,15 +70,29 @@ const intrinsicNameToTSType = new Map<string, string>([
   ["int32", "number"],
   ["int16", "number"],
   ["float16", "number"],
+  ["integer", "number"],
+  ["float", "number"],
   ["float32", "number"],
   ["int64", "bigint"],
   ["boolean", "boolean"],
   ["null", "null"],
   ["void", "void"],
   ["numeric", "number"],
+  ["uint64", "number"], // TODO: bigint?
+  ["uint32", "number"],
+  ["uint16", "number"],
+  ["bytes", "Uint8Array"],
+  ["float64", "number"], // TODO: bigint?
+  ["safeint", "number"],
+  ["utcDateTime", "Date"],
+  ["url", "string"],
 ]);
 
 function getScalarIntrinsicExpression(type: Scalar | IntrinsicType): string {
+  if (type.kind === "Scalar" && type.baseScalar && type.namespace?.name !== "TypeSpec") {
+    // This is a delcared scalar
+    return <Reference refkey={type} />;
+  }
   const tsType = intrinsicNameToTSType.get(type.name);
   if (!tsType) {
     throw new Error(`Unknown scalar type ${type.name}`);

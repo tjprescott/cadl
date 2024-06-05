@@ -1,8 +1,8 @@
 import { describe, it } from "vitest";
 import { render } from "../src/framework/core/render.js";
+import { emitTypescriptInterfaces } from "../src/typescript-interface-emitter.js";
 import { assertEqual } from "./component-utils.js";
 import { getProgram } from "./test-host.js";
-import { emitTypescriptInterfaces } from "./typescript-interface-emitter.js";
 
 describe("e2e typescript interface emitter", () => {
   it("emits models", async () => {
