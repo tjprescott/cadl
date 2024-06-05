@@ -24,28 +24,6 @@ describe("e2e typescript interface emitter", () => {
     );
   });
 
-  // TODO: Support model templates
-  it.skip("emits model templates", async () => {
-    const contents = await getProgram(`
-      model Template<T> {
-        x: T
-      }
-
-      model Test1 is Template<string>;
-      model Test2 {
-        prop: Template<int32>;
-      }
-    `);
-
-    const result = await render(emitTypescriptInterfaces(contents));
-
-    await assertEqual(
-      result,
-      `interface Test1 {}
-      `
-    );
-  });
-
   it("emits literal types", async () => {
     const contents = await getProgram(`
       model A {
@@ -102,17 +80,6 @@ describe("e2e typescript interface emitter", () => {
       z: (string | number)[];
       }`
     );
-  });
-
-  // TODO: Support model templates
-  it.skip("emits arrays of unknown", async () => {
-    const contents = await getProgram(`
-      model MyArray2 is Array<unknown>;
-    `);
-
-    const result = await render(emitTypescriptInterfaces(contents));
-    await assertEqual(result, `interface MyArray2 extends Array<unknown> {}`);
-    // assert.match(contents, /MyArray2 extends Array<unknown>/);
   });
 
   it("emits operations", async () => {
