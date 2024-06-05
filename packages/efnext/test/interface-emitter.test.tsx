@@ -133,8 +133,7 @@ describe("e2e typescript interface emitter", () => {
     );
   });
 
-  // TODO: Fix function declaration reference not resolving
-  it.skip("emits interfaces", async () => {
+  it("emits interfaces", async () => {
     const contents = await getProgram(`
       model Foo {
         prop: string;
@@ -168,7 +167,7 @@ describe("e2e typescript interface emitter", () => {
       }
       interface Template {
         read(): string
-        write(): 
+        write():  string
       }`
     );
   });

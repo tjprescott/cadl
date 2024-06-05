@@ -4,6 +4,7 @@ export function Block({ children }: any) {
       <lb />
       {children}
       <rb />
+      <br />
     </>
   );
 }

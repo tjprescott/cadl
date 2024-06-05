@@ -26,7 +26,7 @@ export function Function({ type: operation, name, children }: FunctionProps) {
 
   if (!children) {
     return (
-      <Declaration name={functionName} refkey={operation?.name ?? functionName}>
+      <Declaration name={functionName} refkey={operation}>
         function {functionName} (
         <Function.Parameters parameters={parameters} />){typeExpression}
         <Block>
@@ -41,14 +41,14 @@ export function Function({ type: operation, name, children }: FunctionProps) {
   if (!parametersChild && !bodyChild) {
     // the direct children are the body...
     return (
-      <Declaration name={functionName} refkey={operation?.name ?? functionName}>
+      <Declaration name={functionName} refkey={operation}>
         function {functionName}(){typeExpression}
         <Block>{children}</Block>
       </Declaration>
     );
   }
   return (
-    <Declaration name={functionName} refkey={operation?.name ?? functionName}>
+    <Declaration name={functionName} refkey={operation}>
       function {functionName}({parametersChild}){typeExpression}
       <Block>
         <Scope name={functionName}>{bodyChild}</Scope>
