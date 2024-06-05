@@ -28,6 +28,18 @@ export function TypeExpression({ type }: TypeExpressionProps) {
       return <TypeLiteral type={type} />;
     case "Union":
       return <UnionExpression type={type} />;
+    case "Tuple":
+      return (
+        <>
+          [
+          {type.values.map((element) => (
+            <>
+              <TypeExpression type={element} />,
+            </>
+          ))}
+          ]
+        </>
+      );
     case "EnumMember":
       return (
         <>

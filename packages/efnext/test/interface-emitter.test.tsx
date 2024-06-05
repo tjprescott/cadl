@@ -244,7 +244,7 @@ describe("e2e typescript interface emitter", () => {
   });
 
   // TODO: Support tuples
-  it.skip("emits tuple types", async () => {
+  it("emits tuple types", async () => {
     const contents = await getProgram(`
       model Foo {
         x: [string, int32];
