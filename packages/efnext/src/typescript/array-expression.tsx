@@ -8,8 +8,7 @@ export interface ArrayExpressionProps {
 export function ArrayExpression({ elementType }: ArrayExpressionProps) {
   return (
     <>
-      <TypeExpression type={elementType} />
-      []
+      (<TypeExpression type={elementType} />) []
     </>
   );
 }
