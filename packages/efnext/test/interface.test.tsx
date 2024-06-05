@@ -1,21 +1,36 @@
 import { Namespace } from "@typespec/compiler";
 import { format } from "prettier";
-import { describe, it } from "vitest";
+import { assert, describe, it } from "vitest";
 import { EmitOutput } from "../src/framework/components/emit-output.js";
 import { SourceFile } from "../src/framework/components/source-file.js";
 import { RenderedTreeNode, render } from "../src/framework/core/render.js";
 import { InterfaceDeclaration } from "../src/typescript/interface-declaration.js";
 import { getProgram } from "./test-host.js";
 
-async function print(root: RenderedTreeNode) {
-  const raw = (root as any).flat(Infinity).join("");
+async function prepareExpected(expected: string) {
+  const expectedRoot = (
+    <EmitOutput>
+      <SourceFile path="test.ts">{expected}</SourceFile>
+    </EmitOutput>
+  );
 
-  try {
-    console.log(await format(raw, { parser: "typescript" }));
-  } catch (e) {
-    console.error("Formatting error", e);
-    console.log(raw);
-  }
+  const rendered = await render(expectedRoot);
+  const raw = (rendered as any).flat(Infinity).join("");
+
+  return format(raw, { parser: "typescript" });
+}
+
+async function prepareActual(actual: RenderedTreeNode) {
+  const raw = (actual as any).flat(Infinity).join("");
+
+  return format(raw, { parser: "typescript" });
+}
+
+async function assertEqual(actual: RenderedTreeNode, expected: string) {
+  const actualFormatted = await prepareActual(actual);
+  const expectedFormatted = await prepareExpected(expected);
+
+  assert.equal(actualFormatted, expectedFormatted);
 }
 
 describe("Typescript Interface", () => {
@@ -37,13 +52,20 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test2.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration type={models[0]} />
             </SourceFile>
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface Widget {
+          id: string;
+          weight: number;
+          color: "blue" | "red";
+         }`
+        );
       });
 
       it("can override interface name", async () => {
@@ -62,13 +84,20 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test2.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration name="MyOperations" type={models[0]} />
             </SourceFile>
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface MyOperations {
+          id: string;
+          weight: number;
+          color: "blue" | "red";
+         }`
+        );
       });
 
       it("can add a members to the interface", async () => {
@@ -87,7 +116,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test2.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration name="MyOperations" type={models[0]}>
                 customProperty: string; <br />
                 customMethod(): void;
@@ -96,7 +125,16 @@ describe("Typescript Interface", () => {
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface MyOperations {
+          id: string;
+          weight: number;
+          color: "blue" | "red";
+          customProperty: string;
+          customMethod(): void;
+        }`
+        );
       });
 
       it("interface name can be customized", async () => {
@@ -115,13 +153,20 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test2.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration name="MyModel" type={models[0]} />
             </SourceFile>
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface MyModel {
+            id: string;
+            weight: number;
+            color: "blue" | "red";
+        }`
+        );
       });
 
       it("interface with extends", async () => {
@@ -145,7 +190,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test3.ts">
+            <SourceFile path="test.ts">
               {models.map((model) => (
                 <InterfaceDeclaration type={model} />
               ))}
@@ -153,7 +198,18 @@ describe("Typescript Interface", () => {
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface Widget {
+            id: string;
+            weight: number;
+            color: "blue" | "red";
+          }
+          interface ErrorWidget extends Widget {
+            code: number;
+            message: string;
+          }`
+        );
       });
     });
 
@@ -172,13 +228,18 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test5.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration type={interfaces[0]} />
             </SourceFile>
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface WidgetOperations {
+          getName(id: string): string;
+        }`
+        );
       });
 
       it("creates an interface with Model references", async () => {
@@ -202,7 +263,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test5.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration type={interfaces[0]} />
               {models.map((model) => (
                 <InterfaceDeclaration type={model} />
@@ -211,7 +272,17 @@ describe("Typescript Interface", () => {
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface WidgetOperations {
+          getName(id: string): Widget;
+        }
+        interface Widget {
+          id: string;
+          weight: number;
+          color: "blue" | "red";
+        }`
+        );
       });
 
       it("creates an interface that extends another", async () => {
@@ -239,7 +310,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test5.ts">
+            <SourceFile path="test.ts">
               <InterfaceDeclaration type={interfaces[1]} />
               {models.map((model) => (
                 <InterfaceDeclaration type={model} />
@@ -248,7 +319,18 @@ describe("Typescript Interface", () => {
           </EmitOutput>
         );
 
-        await print(res);
+        await assertEqual(
+          res,
+          `interface WidgetOperationsExtended {
+          getName(id: string): Widget;
+          delete(id: string): void;
+        }
+        interface Widget {
+          id: string;
+          weight: number;
+          color: "blue" | "red";
+        }`
+        );
       });
     });
   });

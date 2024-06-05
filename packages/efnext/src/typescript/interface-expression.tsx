@@ -24,7 +24,6 @@ export function InterfaceExpression({ type, children }: InterfaceExpressionProps
   }
 
   if (children) {
-    console.log("children", children);
     members.push(children);
   }
 

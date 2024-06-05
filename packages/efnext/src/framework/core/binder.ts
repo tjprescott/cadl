@@ -140,7 +140,6 @@ export function createOutputBinder(): Binder {
     if (waitingDeclarations.has(refkey)) {
       const cbs = waitingDeclarations.get(refkey)!;
       for (const cb of cbs) {
-        console.log("Resolving for", (refkey as any).name);
         cb(declaration);
       }
     }
