@@ -10,7 +10,9 @@ import { getProgram } from "./test-host.js";
 async function prepareExpected(expected: string) {
   const expectedRoot = (
     <EmitOutput>
-      <SourceFile path="test.ts">{expected}</SourceFile>
+      <SourceFile filetype="typescript" path="test.ts">
+        {expected}
+      </SourceFile>
     </EmitOutput>
   );
 
@@ -52,7 +54,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration type={models[0]} />
             </SourceFile>
           </EmitOutput>
@@ -84,7 +86,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration name="MyOperations" type={models[0]} />
             </SourceFile>
           </EmitOutput>
@@ -116,7 +118,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration name="MyOperations" type={models[0]}>
                 customProperty: string; <br />
                 customMethod(): void;
@@ -153,7 +155,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration name="MyModel" type={models[0]} />
             </SourceFile>
           </EmitOutput>
@@ -190,7 +192,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               {models.map((model) => (
                 <InterfaceDeclaration type={model} />
               ))}
@@ -228,7 +230,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration type={interfaces[0]} />
             </SourceFile>
           </EmitOutput>
@@ -263,7 +265,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration type={interfaces[0]} />
               {models.map((model) => (
                 <InterfaceDeclaration type={model} />
@@ -310,7 +312,7 @@ describe("Typescript Interface", () => {
 
         let res = await render(
           <EmitOutput>
-            <SourceFile path="test.ts">
+            <SourceFile filetype="typescript" path="test.ts">
               <InterfaceDeclaration type={interfaces[1]} />
               {models.map((model) => (
                 <InterfaceDeclaration type={model} />
