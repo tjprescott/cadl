@@ -6,12 +6,12 @@ import { Block } from "./block.js";
 import { TypeExpression } from "./type-expression.js";
 
 export interface FunctionProps {
-  operation?: Operation;
+  type?: Operation;
   name?: string;
   children?: SourceNode[];
 }
 
-export function Function({ operation, name, children }: FunctionProps) {
+export function Function({ type: operation, name, children }: FunctionProps) {
   // todo: take an Operation type and emit an empty function based on that.
   const functionName = name ?? operation!.name;
   const parameters = operation?.parameters;
@@ -71,9 +71,11 @@ Function.Parameters = function Parameters({ parameters, children }: FunctionPara
       <>
         {params.map((param, index) => {
           const isLast = index === params.length - 1;
+          const optionality = param.optional ? "?" : "";
           return (
             <>
-              {param.name}: <TypeExpression type={param.type} />
+              {param.name}
+              {optionality}: <TypeExpression type={param.type} />
               {!isLast ? ", " : ""}
             </>
           );

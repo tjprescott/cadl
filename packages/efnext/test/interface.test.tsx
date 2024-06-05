@@ -1,39 +1,11 @@
 import { Namespace } from "@typespec/compiler";
-import { format } from "prettier";
-import { assert, describe, it } from "vitest";
+import { describe, it } from "vitest";
 import { EmitOutput } from "../src/framework/components/emit-output.js";
 import { SourceFile } from "../src/framework/components/source-file.js";
-import { RenderedTreeNode, render } from "../src/framework/core/render.js";
+import { render } from "../src/framework/core/render.js";
 import { InterfaceDeclaration } from "../src/typescript/interface-declaration.js";
+import { assertEqual } from "./component-utils.js";
 import { getProgram } from "./test-host.js";
-
-async function prepareExpected(expected: string) {
-  const expectedRoot = (
-    <EmitOutput>
-      <SourceFile filetype="typescript" path="test.ts">
-        {expected}
-      </SourceFile>
-    </EmitOutput>
-  );
-
-  const rendered = await render(expectedRoot);
-  const raw = (rendered as any).flat(Infinity).join("");
-
-  return format(raw, { parser: "typescript" });
-}
-
-async function prepareActual(actual: RenderedTreeNode) {
-  const raw = (actual as any).flat(Infinity).join("");
-
-  return format(raw, { parser: "typescript" });
-}
-
-async function assertEqual(actual: RenderedTreeNode, expected: string) {
-  const actualFormatted = await prepareActual(actual);
-  const expectedFormatted = await prepareExpected(expected);
-
-  assert.equal(actualFormatted, expectedFormatted);
-}
 
 describe("Typescript Interface", () => {
   describe("Interface bound to Typespec Types", () => {
