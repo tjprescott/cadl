@@ -243,7 +243,6 @@ describe("e2e typescript interface emitter", () => {
     );
   });
 
-  // TODO: Support tuples
   it("emits tuple types", async () => {
     const contents = await getProgram(`
       model Foo {
@@ -288,7 +287,7 @@ describe("e2e typescript interface emitter", () => {
   });
 
   // TODO: Support scalars
-  it.skip("emits scalars", async () => {
+  it("emits scalars", async () => {
     const contents = await getProgram(
       `
       scalar X extends string;

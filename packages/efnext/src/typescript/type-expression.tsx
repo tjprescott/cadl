@@ -75,6 +75,7 @@ const intrinsicNameToTSType = new Map<string, string>([
   ["boolean", "boolean"],
   ["null", "null"],
   ["void", "void"],
+  ["numeric", "number"],
 ]);
 
 function getScalarIntrinsicExpression(type: Scalar | IntrinsicType): string {

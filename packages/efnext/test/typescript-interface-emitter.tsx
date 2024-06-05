@@ -3,6 +3,7 @@ import { EmitOutput, SourceFile } from "../src/framework/components/index.js";
 import { EnumDeclaration } from "../src/typescript/enum-declaration.js";
 import { Function } from "../src/typescript/function.js";
 import { InterfaceDeclaration } from "../src/typescript/interface-declaration.js";
+import { ScalarDeclaration } from "../src/typescript/scalar-declaration.js";
 import { UnionDeclaration } from "../src/typescript/union-declaration.js";
 
 export function $onEmit(context: EmitContext) {
@@ -18,7 +19,7 @@ export function emitTypescriptInterfaces(program: Program) {
   const enums = [...globalNamespace.enums.values()];
   const unions = [...globalNamespace.unions.values()];
   const interfaces = [...globalNamespace.interfaces.values()];
-  // const scalars = [...globalNamespace.scalars.values()];
+  const scalars = [...globalNamespace.scalars.values()];
 
   return (
     <EmitOutput>
@@ -37,6 +38,9 @@ export function emitTypescriptInterfaces(program: Program) {
         ))}
         {interfaces.map((iface) => (
           <InterfaceDeclaration type={iface} />
+        ))}
+        {scalars.map((scalar) => (
+          <ScalarDeclaration type={scalar} />
         ))}
       </SourceFile>
     </EmitOutput>
