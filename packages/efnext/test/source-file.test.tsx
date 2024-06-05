@@ -12,12 +12,12 @@ import { print } from "./utils.js";
 describe("Source file component", () => {
   it("works", async () => {
     let res = await render(<EmitOutput>
-      <SourceFile path="test1.ts">
+      <SourceFile path="test1.ts" filetype="typescript">
         <Declaration name="hi" refkey="hi">
           const hi = 1;
         </Declaration>
       </SourceFile>
-      <SourceFile path="test2.ts">
+      <SourceFile path="test2.ts" filetype="typescript">
         const bye = <Reference refkey="hi" />;
       </SourceFile>
     </EmitOutput>);

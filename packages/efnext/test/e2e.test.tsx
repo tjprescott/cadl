@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { RenderedTreeNode, render } from "../src/framework/core/render.js";
+import { RenderedTreeNode, SourceFile as SF, render, renderToSourceFiles } from "../src/framework/core/render.js";
 import { EmitOutput } from "../src/framework/components/emit-output.js";
 import { SourceFile } from "../src/framework/components/source-file.js";
 import { Function } from "../src/typescript/function.js";
@@ -10,22 +10,38 @@ import { TypeDeclaration } from "../src/typescript/type-declaration.js";
 import { setTimeout, setImmediate } from "node:timers/promises"
 import { print } from "./utils.js";
 
-describe("e2e", () => {
-  it.only("example", async () => {
-    let res = await render(
-      <EmitOutput>
-        <SourceFile path="test.ts">
-          <Function name="test">
-          </Function>
+function printSourceFiles(files: SF[]) {
+  for (const file of files) {
+    console.log("## " + file.path);
+    console.log(file.content += "\n");
+  }
+}
 
-          <Function name="test2">
-            const x = <Reference refkey="test" />;
-          </Function>
+describe("e2e", () => {
+  it("example", async () => {
+    const program = await getProgram(`
+      model Foo { x: true | string }
+      model Bar { x: Foo, y: { a: 1 } }
+    `);
+
+    const [Foo] = program.resolveTypeReference("Foo");
+    const [Bar] = program.resolveTypeReference("Bar");
+    
+    let res = await renderToSourceFiles(
+      <EmitOutput>
+        <SourceFile path="test.ts" filetype="typescript">
+          <TypeDeclaration type={Foo!} />
+        </SourceFile>
+        <SourceFile path="test2.ts" filetype="typescript">
+          <TypeDeclaration type={Bar!} />
+        </SourceFile>
+        <SourceFile path="test3.ts" filetype="typescript">
+          const x = <Reference refkey={Bar!} />;
         </SourceFile>
       </EmitOutput>
     )
 
-    await print(res);
+    printSourceFiles(res);
   });
 
   it("interfaces", async () => {
@@ -39,7 +55,7 @@ describe("e2e", () => {
 
     let res = await render(
       <EmitOutput>
-        <SourceFile path="test.ts">
+        <SourceFile path="test.ts" filetype="typescript">
           <TypeDeclaration type={Foo!} />
           <TypeDeclaration type={Bar!} />
         </SourceFile>
@@ -59,7 +75,7 @@ describe("e2e", () => {
 
     let res = await render(
       <EmitOutput>
-        <SourceFile path="test.ts">
+        <SourceFile path="test.ts" filetype="typescript">
           <TypeDeclaration type={Bar!} />
           <TypeDeclaration type={Foo!} />
         </SourceFile>
@@ -80,7 +96,7 @@ describe("e2e", () => {
 
     let res = await render(
       <EmitOutput>
-        <SourceFile path="test.ts">
+        <SourceFile path="test.ts" filetype="typescript">
           <TypeDeclaration type={Bar!} />
           <TypeDeclaration type={Foo!} />
         </SourceFile>
@@ -101,10 +117,10 @@ describe("e2e", () => {
 
   let res = await render(
     <EmitOutput>
-      <SourceFile path="test1.ts">
+      <SourceFile path="test1.ts" filetype="typescript">
         <TypeDeclaration type={Bar!} />
       </SourceFile>
-      <SourceFile path="test2.ts">
+      <SourceFile path="test2.ts" filetype="typescript">
         <TypeDeclaration type={Foo!} />
       </SourceFile>
     </EmitOutput>

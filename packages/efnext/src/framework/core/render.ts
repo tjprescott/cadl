@@ -1,5 +1,6 @@
 import { ComponentChild, ComponentChildren, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
 import { setImmediate } from "node:timers/promises";
+import { format } from "prettier";
 import { MetaNode, getMeta } from "./metatree.js";
 import { notifyResolved } from "./use-resolved.js";
 
@@ -25,6 +26,35 @@ const intrinsicMap: Record<string, string> = {
   br: "\n",
 };
 
+export interface SourceFile {
+  path: string;
+  content: string;
+}
+
+export async function renderToSourceFiles(root: SourceNode): Promise<SourceFile[]> {
+  const res = await render(root);
+  const sourceFiles: SourceFile[] = [];
+
+  // flat(1) because there is 1 nested node (for the emit context)
+  for (const node of res.flat(1)) {
+    if (!Array.isArray(node)) {
+      // probably an error to include a string outside a source node.
+      // consider emitting an error
+      continue;
+    }
+
+    const meta = getMeta(node);
+    if (meta.sourceFile) {
+      sourceFiles.push({
+        path: meta.sourceFile.path,
+        content: await print(node),
+      });
+    }
+  }
+
+  return sourceFiles;
+}
+
 export async function render(root: SourceNode): Promise<RenderedTreeNode> {
   // todo: check for forward progress.
   // I /think/ this should work to ensure render doesn't resolve until
@@ -37,6 +67,7 @@ export async function render(root: SourceNode): Promise<RenderedTreeNode> {
 
   return res;
 }
+
 export function renderWorker(root: SourceNode): RenderedTreeNode {
   if (isIntrinsicComponent(root)) {
     return [intrinsicMap[root.type]];
@@ -46,6 +77,7 @@ export function renderWorker(root: SourceNode): RenderedTreeNode {
   const node: RenderedTreeNode = [];
   const meta = getMeta(node);
   meta.parent = renderContext.meta;
+  meta.type = root.type;
   const oldContext = renderContext;
   renderContext = {
     meta,
@@ -104,4 +136,9 @@ function assertIsFunctionComponent(
 
 function isSourceNode(element: ComponentChild): element is SourceNode {
   return typeof element === "object" && element !== null && Object.hasOwn(element, "type");
+}
+
+export function print(root: RenderedTreeNode) {
+  const raw = (root as any).flat(Infinity).join("");
+  return format(raw, { parser: "typescript" });
 }

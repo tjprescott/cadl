@@ -57,7 +57,7 @@ describe("e2e", () => {
 
     let res = await render(
       <EmitOutput>
-        <SourceFile path="test1.ts">
+        <SourceFile path="test1.ts" filetype="typescript">
           {interfaces.map((iface) => (
             <InterfaceDeclaration type={iface} />
           ))}

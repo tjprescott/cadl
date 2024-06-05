@@ -13,7 +13,8 @@ export interface TypeExpressionProps {
 
 export function TypeExpression({ type }: TypeExpressionProps) {
   if (isDeclaration(type) && !(type as Model).indexer) {
-    console.log("TypeExpression:", type.name);
+    // todo: probably need abstraction around deciding what's a declaration in the output
+    // (it may not correspond to things which are declarations in TypeSpec?)
     return <Reference refkey={type} />;
   }
 
