@@ -1,7 +1,8 @@
 import { ComponentChild, ComponentChildren, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
 import { setImmediate } from "node:timers/promises";
-import { format } from "prettier";
+import { BuiltInParserName, format } from "prettier";
 import { MetaNode, getMeta } from "./metatree.js";
+import { getPrinter } from "./use-printer.js";
 import { notifyResolved } from "./use-resolved.js";
 
 export interface RenderContext {
@@ -47,7 +48,7 @@ export async function renderToSourceFiles(root: SourceNode): Promise<SourceFile[
     if (meta.sourceFile) {
       sourceFiles.push({
         path: meta.sourceFile.path,
-        content: await print(node),
+        content: await printFormatted(node, meta.sourceFile.fileType),
       });
     }
   }
@@ -138,7 +139,32 @@ function isSourceNode(element: ComponentChild): element is SourceNode {
   return typeof element === "object" && element !== null && Object.hasOwn(element, "type");
 }
 
-export function print(root: RenderedTreeNode) {
-  const raw = (root as any).flat(Infinity).join("");
-  return format(raw, { parser: "typescript" });
+export async function printFormatted(
+  root: RenderedTreeNode,
+  filetype: BuiltInParserName
+): Promise<string> {
+  const raw = print(root);
+  return format(raw, { parser: filetype });
+}
+
+export function print(root: RenderedTreeNode): string {
+  const customPrinter = getPrinter(root);
+  if (customPrinter) {
+    return customPrinter(root);
+  }
+
+  return printChildren(root);
+}
+
+export function printChildren(root: RenderedTreeNode): string {
+  let printed = "";
+  for (const child of root) {
+    if (typeof child === "string") {
+      printed += child;
+    } else {
+      printed += print(child);
+    }
+  }
+
+  return printed;
 }
