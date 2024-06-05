@@ -1,3 +1,4 @@
+import { ComponentChildren } from "#jsx/jsx-runtime";
 import { Interface, Model } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { isModel } from "../framework/utils/typeguards.js";
@@ -6,10 +7,13 @@ import { Reference } from "./reference.js";
 
 export interface InterfaceDeclarationProps {
   type: Model | Interface;
+  name?: string;
+  children?: ComponentChildren;
 }
 
-export function InterfaceDeclaration({ type }: InterfaceDeclarationProps) {
+export function InterfaceDeclaration({ type, name, children }: InterfaceDeclarationProps) {
   let extendsClause = undefined;
+  const ifaceName = name ?? type.name;
 
   if (isModel(type) && type.baseModel) {
     extendsClause = (
@@ -20,8 +24,9 @@ export function InterfaceDeclaration({ type }: InterfaceDeclarationProps) {
   }
 
   return (
-    <Declaration name={type.name} refkey={type}>
-      interface {type.name} {extendsClause} <InterfaceExpression type={type} />
+    <Declaration name={ifaceName} refkey={type}>
+      interface {ifaceName} {extendsClause}{" "}
+      <InterfaceExpression type={type}>{children}</InterfaceExpression>
     </Declaration>
   );
 }
