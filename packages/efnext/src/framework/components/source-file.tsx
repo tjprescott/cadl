@@ -51,7 +51,13 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
   const ImportContainer = useResolved(() => {
     let importString = "";
     for (const [importPath, records] of imports) {
-      importString += `import {${records.map((r) => r.name).join(",")}} from "${importPath.replace(/\.ts$/, ".js")}"\n`;
+      if (filetype === "typescript") {
+        importString += `import {${records.map((r) => r.name).join(",")}} from "${importPath.replace(/\.ts$/, ".js")}"\n`;
+      }
+
+      if (filetype === "python") {
+        importString += `from ${importPath.replace(/\.py$/, "")} import ${records.map((r) => r.name).join(",")}\n`;
+      }
     }
 
     return <>{importString}</>;

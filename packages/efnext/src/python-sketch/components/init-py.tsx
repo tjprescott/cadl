@@ -21,13 +21,13 @@ export function InitPy({ folder }: InitPyProps) {
   if (folder.types.length > 0) {
     const typeNames = folder.types.map((t) => t.name);
     imports.push(`from models import ${typeNames.join(",")}`);
-    all.concat(typeNames);
+    all = all.concat(typeNames);
   }
 
   if (folder.operations.length > 0) {
     const opNames = folder.operations.map((t) => t.name);
     imports.push(`from operations import ${opNames.join(",")}`);
-    all.concat(opNames);
+    all = all.concat(opNames);
   }
 
   return code`

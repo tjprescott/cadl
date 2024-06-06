@@ -1,13 +1,14 @@
 import { Operation, Type } from "@typespec/compiler";
 import { SourceDirectory } from "../../framework/components/source-directory.js";
 import { SourceFile } from "../../framework/components/source-file.js";
+import { TypeDeclaration } from "../../python/type-declaration.js";
 import { ClientOperation } from "./client-operation.js";
 import { InitPy } from "./init-py.js";
 import { InternalClientOperation } from "./internal-client-operation.js";
-import { TypeDeclaration } from "../../python/type-declaration.js";
 
 export interface AppFolderRecord {
   path: string;
+  moduleName: string;
   types: Declaration[];
   operations: Operation[];
   subfolders: AppFolderRecord[];
@@ -37,7 +38,7 @@ export function AppFolder({ folder }: AppFolderProps) {
   console.log(`Models in ${folder.path}: ${models.map((m) => m.props.type.name)}`);
 
   return (
-    <SourceDirectory path={folder.path}>
+    <SourceDirectory path={folder.moduleName}>
       <SourceFile path="__init__.py" filetype="python">
         <InitPy folder={folder} />
       </SourceFile>

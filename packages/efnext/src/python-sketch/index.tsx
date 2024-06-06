@@ -37,6 +37,7 @@ function getFolderForNamespace(
   const rootFolder: AppFolderRecord = {
     path,
     types: findTypesInNamespace(namespace),
+    moduleName: namespace.name,
     operations: [...namespace.operations.values()],
     subfolders: [...namespace.namespaces.values()].map((n) =>
       getFolderForNamespace(program, n, n.name)
