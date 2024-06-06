@@ -64,10 +64,10 @@ export function CommandArgParser({ command }: CommandArgParserProps) {
   );
 }
 
-// helpers
-declare const isBoolean: any;
-declare const hasShortName: any;
-declare const getShortName: any;
+function isBoolean(type: Type) {
+  return 
+}
+
 
 function collectCommandOptions(command: Operation): ModelProperty[] {
   const commandOpts: ModelProperty[] = [];

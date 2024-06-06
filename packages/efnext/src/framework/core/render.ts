@@ -1,6 +1,6 @@
 import { ComponentChild, ComponentChildren, FunctionComponent, SourceNode } from "#jsx/jsx-runtime";
 import { setImmediate } from "node:timers/promises";
-import { BuiltInParserName, format } from "prettier";
+import { format } from "prettier";
 import { MetaNode, getMeta } from "./metatree.js";
 import { getPrinter } from "./use-printer.js";
 import { notifyResolved } from "./use-resolved.js";
@@ -178,10 +178,15 @@ function isSourceNode(element: ComponentChild): element is SourceNode {
 
 export async function printFormatted(
   root: RenderedTreeNode,
-  filetype: BuiltInParserName
+  filetype: "typescript" | "python"
 ): Promise<string> {
   const raw = print(root);
-  return format(raw, { parser: filetype });
+  // todo: handle langauges we can format/not format.
+  if (filetype === "typescript") {
+    return format(raw, { parser: filetype });
+  } else {
+    return raw;
+  }
 }
 
 export function print(root: RenderedTreeNode): string {

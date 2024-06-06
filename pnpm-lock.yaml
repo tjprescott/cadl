@@ -334,6 +334,12 @@ importers:
 
   packages/efnext:
     dependencies:
+      '@typespec/http':
+        specifier: workspace:~
+        version: link:../http
+      change-case:
+        specifier: ~5.4.4
+        version: 5.4.4
       prettier:
         specifier: ~3.2.5
         version: 3.2.5

@@ -3,6 +3,7 @@ import { emit } from "./test-host.js";
 
 describe.skip("hello", () => {
   it("emit output.txt with content hello world", async () => {
-    await emit(`op test(colors: boolean): void;`);
+    const results = await emit(`op test(colors: boolean): void;`);
+    console.log(results);
   });
 });

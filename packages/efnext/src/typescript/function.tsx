@@ -1,4 +1,4 @@
-import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
+import { ComponentChild, ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { Scope } from "../framework/components/scope.js";
@@ -13,11 +13,19 @@ export interface FunctionProps {
   children?: ComponentChildren;
 }
 
+function coerceArray(v: unknown): any {
+  if (v === null || v === undefined || Array.isArray(v)) {
+    return v;
+  }
+
+  return [v];
+}
+
 export function Function({ type, parameters, name, children }: FunctionProps) {
   const functionName = name ?? type!.name;
 
-  const parametersChild = children?.find((child) => (child as any).type === Function.Parameters);
-  const bodyChild = children?.find((child) => (child as any).type === Function.Body);
+  const parametersChild = coerceArray(children)?.find((child: any) => child.type === Function.Parameters);
+  const bodyChild = coerceArray(children)?.find((child: any) => child.type === Function.Body);
 
   const sReturnType = type?.returnType ? <TypeExpression type={type.returnType} /> : undefined;
   const sParams = parametersChild ? (
