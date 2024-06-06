@@ -45,7 +45,10 @@ export async function renderToSourceFiles(root: SourceNode): Promise<SourceFile[
     }
 
     const meta = getMeta(node);
+    console.log(meta); // This is the metanode for the sourceDirectory
     if (meta.sourceFile) {
+      // When there are source directories we never get here. Are we missing flattening?
+      console.log("Source file");
       sourceFiles.push({
         path: meta.sourceFile.path,
         content: await printFormatted(node, meta.sourceFile.fileType),

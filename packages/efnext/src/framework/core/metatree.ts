@@ -10,11 +10,16 @@ export interface MetaNode {
   contextId?: symbol;
   contextValue?: unknown;
   sourceFile?: SourceFileMetadata;
+  sourceDirectory?: SourceDirectoryMetadata;
 }
 
 export interface SourceFileMetadata {
   path: string;
   fileType: "typescript";
+}
+
+export interface SourceDirectoryMetadata {
+  path: string;
 }
 
 export function getMeta(node: RenderedTreeNode) {

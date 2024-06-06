@@ -1,6 +1,8 @@
-import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
+import { ComponentChildren } from "#jsx/jsx-runtime";
+import { join } from "path";
 import { BinderContext, ModuleScope } from "../core/binder.js";
 import { createContext, useContext } from "../core/context.js";
+import { MetaNode } from "../core/metatree.js";
 import { getRenderContext } from "../core/render.js";
 import { useResolved } from "../core/use-resolved.js";
 import { ScopeContext } from "./scope.js";
@@ -26,7 +28,8 @@ export const SourceFileContext = createContext<SourceFileState>();
 
 export function SourceFile({ path, filetype, children }: SourceFileProps) {
   const renderContext = getRenderContext();
-  renderContext.meta!.sourceFile = { path, fileType: filetype };
+  const fullPath = resolvePath(renderContext.meta, path);
+  renderContext.meta!.sourceFile = { path: fullPath, fileType: filetype };
 
   const binder = useContext(BinderContext);
   if (!binder) {
@@ -61,4 +64,18 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
       <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>;
     </SourceFileContext.Provider>
   );
+}
+
+function resolvePath(node: MetaNode | undefined, path: string) {
+  const parent = node?.parent;
+
+  if (!parent) {
+    return path;
+  }
+
+  if (parent.sourceDirectory) {
+    return resolvePath(parent, join(parent.sourceDirectory.path, path));
+  }
+
+  return resolvePath(parent, path);
 }
