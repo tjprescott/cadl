@@ -11,7 +11,7 @@ export interface InternalClientOperationProps {
  */
 export function InternalClientOperation({ operation }: InternalClientOperationProps) {
   const namer = useNamePolicy();
-  const name = `_` + namer.getName(operation);
+  const name = `_` + namer.getName(operation, "function");
   const functionDef = (
     <Function type={operation} name={name} refkey={getRefkey(operation, "internal")}>
       raise NotImplementedError

@@ -2,21 +2,21 @@ import { ComponentChildren, FunctionComponent } from "#jsx/jsx-runtime";
 import { Type } from "@typespec/compiler";
 import { createContext, useContext } from "./context.js";
 
-export interface RenamerCallback {
-  (type: Type): string;
+export interface RenamerCallback<TKinds extends string = string> {
+  (type: Type, kind: TKinds): string;
 }
 
 export interface NamePolicyProviderProps {
   children?: ComponentChildren;
 }
 
-export interface Renamer {
-  getName(type: Type): string;
+export interface Renamer<TKinds extends string = string> {
+  getName(type: Type, kind: TKinds): string;
   setName(type: Type, name: string): void;
 }
 
-export interface NamePolicy {
-  renamer: Renamer;
+export interface NamePolicy<TKinds extends string = string> {
+  renamer: Renamer<TKinds>;
   Provider: FunctionComponent;
 }
 
@@ -27,16 +27,16 @@ export function useNamePolicy() {
   return useContext(RenamingPolicyContext)!;
 }
 
-export function createNamePolicy(namer: RenamerCallback) {
+export function createNamePolicy<TKinds extends string = string>(namer: RenamerCallback<TKinds>) {
   const overrides = new WeakMap<Type, string>();
 
-  const renamer: Renamer = {
-    getName(type: Type) {
+  const renamer: Renamer<TKinds> = {
+    getName(type, kind) {
       if (overrides.has(type)) {
         return overrides.get(type)!;
       }
 
-      return namer(type);
+      return namer(type, kind);
     },
     setName(type: Type, name: string) {
       overrides.set(type, name);
