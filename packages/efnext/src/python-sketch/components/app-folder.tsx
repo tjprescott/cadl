@@ -42,15 +42,21 @@ export function AppFolder({ folder }: AppFolderProps) {
       <SourceFile path="__init__.py" filetype="python">
         <InitPy folder={folder} />
       </SourceFile>
-      <SourceFile path="models.py" filetype="python">
-        {models}
-      </SourceFile>
-      <SourceFile path="operations.py" filetype="python">
-        {operations}
-      </SourceFile>
-      <SourceFile path="_operations.py" filetype="python">
-        {internalOperations}
-      </SourceFile>
+      {models.length > 0 && (
+        <SourceFile path="models.py" filetype="python">
+          {models}
+        </SourceFile>
+      )}
+      {operations.length > 0 && (
+        <SourceFile path="operations.py" filetype="python">
+          {operations}
+        </SourceFile>
+      )}
+      {internalOperations.length > 0 && (
+        <SourceFile path="_operations.py" filetype="python">
+          {internalOperations}
+        </SourceFile>
+      )}
 
       {subfolders}
     </SourceDirectory>
