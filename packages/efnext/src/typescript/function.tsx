@@ -1,7 +1,6 @@
-import { ComponentChild, ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
+import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
-import { Scope } from "../framework/components/scope.js";
 import { Block } from "./block.js";
 import { TypeExpression } from "./type-expression.js";
 
@@ -24,10 +23,16 @@ function coerceArray(v: unknown): any {
 export function Function({ type, parameters, name, refkey, children }: FunctionProps) {
   const functionName = name ?? type!.name;
 
-  const parametersChild = coerceArray(children)?.find((child: any) => child.type === Function.Parameters);
+  const parametersChild = coerceArray(children)?.find(
+    (child: any) => child.type === Function.Parameters
+  );
   const bodyChild = coerceArray(children)?.find((child: any) => child.type === Function.Body);
 
-  const sReturnType = type?.returnType ? <TypeExpression type={type.returnType} /> : undefined;
+  const sReturnType = type?.returnType ? (
+    <>
+      :<TypeExpression type={type.returnType} />
+    </>
+  ) : undefined;
   const sParams = parametersChild ? (
     parametersChild
   ) : (
@@ -54,7 +59,7 @@ Function.Parameters = function Parameters({ type, parameters, children }: Functi
   if (children) {
     return children;
   } else if (parameters) {
-    return Object.entries(parameters).map(([key, value]) => [key, ":", value, ","])
+    return Object.entries(parameters).map(([key, value]) => [key, ":", value, ","]);
   } else {
     const params = Array.from(type?.properties.values() ?? []);
     return (
