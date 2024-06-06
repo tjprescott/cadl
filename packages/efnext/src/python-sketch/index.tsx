@@ -1,11 +1,4 @@
-import {
-  EmitContext,
-  ListenerFlow,
-  Namespace,
-  Program,
-  Type,
-  navigateType,
-} from "@typespec/compiler";
+import { EmitContext, Namespace, Program } from "@typespec/compiler";
 import { getAllHttpServices } from "@typespec/http";
 import { EmitOutput } from "../framework/components/index.js";
 import { emit } from "../framework/core/emit.js";
@@ -15,7 +8,6 @@ import { namePolicy } from "./naming-policy.js";
 export async function $onEmit(context: EmitContext) {
   // queryApp walks the type graph and assembles the AppFolder structure.
   const rootFolder = queryApp(context);
-  console.log(rootFolder);
   await emit(
     context,
     <EmitOutput namePolicy={namePolicy}>
@@ -37,37 +29,47 @@ function queryApp({ program }: EmitContext) {
   return getFolderForNamespace(program, service.namespace, "./");
 }
 
-function getFolderForNamespace(program: Program, namespace: Namespace, path: string): AppFolderRecord {
+function getFolderForNamespace(
+  program: Program,
+  namespace: Namespace,
+  path: string
+): AppFolderRecord {
   const rootFolder: AppFolderRecord = {
     path,
     types: findTypesInNamespace(namespace),
     operations: [...namespace.operations.values()],
-    subfolders: [...namespace.namespaces.values()].map((n) => getFolderForNamespace(program, n, n.name)),
+    subfolders: [...namespace.namespaces.values()].map((n) =>
+      getFolderForNamespace(program, n, n.name)
+    ),
   };
 
   return rootFolder;
 }
 
 function findTypesInNamespace(root: Namespace) {
-  const types: (Type & { name: string })[] = [];
+  return [...root.models.values()];
+  // const types: (Type & { name: string })[] = [];
 
-  function appendType(type: Type) {
-    // todo: fix array handling here.
-    if ("name" in type && typeof type.name === "string" && type.name !== "Array") {
-      types.push(type as any);
-    }
-  }
+  // function appendType(type: Type) {
+  //   // todo: fix array handling here.
+  //   if ("name" in type && typeof type.name === "string" && type.name !== "Array") {
+  //     types.push(type as any);
+  //   }
+  // }
 
-  navigateType(
-    root,
-    {
-      model: appendType,
-      namespace(n) {
-        return ListenerFlow.NoRecursion;
-      },
-    },
-    {}
-  );
+  // navigateType(
+  //   root,
+  //   {
+  //     model: appendType,
+  //     namespace(n) {
+  //       if (n !== root) {
+  //         return ListenerFlow.NoRecursion;
+  //       }
+  //       return undefined;
+  //     },
+  //   },
+  //   {}
+  // );
 
-  return types;
+  // return types;
 }

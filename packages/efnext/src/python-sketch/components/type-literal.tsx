@@ -8,8 +8,8 @@ export function TypeLiteral({ type }: TypeLiteralProps) {
   switch (type.kind) {
     case "Boolean":
     case "Number":
-      return String(type.value);
+      return `Literal[${String(type.value)}]`;
     case "String":
-      return `"${type.value}"`;
+      return `Literal["${type.value}"]`;
   }
 }

@@ -32,7 +32,7 @@ export function SourceDirectory({ path, children }: SourceDirectoryProps) {
 
   return (
     <SourceDirectoryContext.Provider value={sourceDirectoryState}>
-      <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>;
+      <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>
     </SourceDirectoryContext.Provider>
   );
 }

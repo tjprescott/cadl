@@ -1,10 +1,10 @@
 import { Operation, Type } from "@typespec/compiler";
-import { TypeDeclaration } from "../../typescript/type-declaration.js";
-import { ClientOperation } from "./client-operation.js";
-import { InternalClientOperation } from "./internal-client-operation.js";
 import { SourceDirectory } from "../../framework/components/source-directory.js";
 import { SourceFile } from "../../framework/components/source-file.js";
+import { ClientOperation } from "./client-operation.js";
 import { InitPy } from "./init-py.js";
+import { InternalClientOperation } from "./internal-client-operation.js";
+import { TypeDeclaration } from "./type-declaration.js";
 
 export interface AppFolderRecord {
   path: string;
@@ -24,7 +24,6 @@ type Declaration = Type & { name: string };
  */
 export function AppFolder({ folder }: AppFolderProps) {
   const models = folder.types.map((t) => (
-    console.log("Have a model?"),
     <TypeDeclaration type={t} /> // rote conversion of typespec type to python type
   ));
 
@@ -35,6 +34,7 @@ export function AppFolder({ folder }: AppFolderProps) {
   ));
 
   const subfolders = folder.subfolders.map((s) => <AppFolder folder={s} />);
+  console.log(`Models in ${folder.path}: ${models.map((m) => m.props.type.name)}`);
 
   return (
     <SourceDirectory path={folder.path}>
