@@ -2,7 +2,7 @@ import { Operation } from "@typespec/compiler";
 import { useNamePolicy } from "../../framework/core/name-policy.js";
 import { getRefkey } from "../../framework/core/refkeyer.js";
 import { code } from "../../framework/core/code.js";
-import { Function } from "../../typescript/function.js";
+import { Function } from "../../python/function.js";
 export interface InternalClientOperationProps {
   operation: Operation;
 }

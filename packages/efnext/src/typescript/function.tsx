@@ -21,7 +21,7 @@ function coerceArray(v: unknown): any {
   return [v];
 }
 
-export function Function({ type, parameters, name, children }: FunctionProps) {
+export function Function({ type, parameters, name, refkey, children }: FunctionProps) {
   const functionName = name ?? type!.name;
 
   const parametersChild = coerceArray(children)?.find((child: any) => child.type === Function.Parameters);
@@ -37,7 +37,7 @@ export function Function({ type, parameters, name, children }: FunctionProps) {
   let sBody = bodyChild ? bodyChild : <Function.Body>{children}</Function.Body>;
 
   return (
-    <Declaration name={functionName} refkey={type}>
+    <Declaration name={functionName} refkey={refkey ?? type}>
       function {functionName} ({sParams}) {sReturnType}
       <Block>{sBody}</Block>
     </Declaration>

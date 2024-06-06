@@ -7,10 +7,11 @@ import { TypeExpression } from "./type-expression.js";
 export interface FunctionProps {
   type?: Operation;
   name?: string;
+  refkey?: unknown
   children?: SourceNode[];
 }
 
-export function Function({ type: operation, name, children }: FunctionProps) {
+export function Function({ type: operation, name, children, refkey }: FunctionProps) {
   // todo: take an Operation type and emit an empty function based on that.
   const functionName = name ?? operation!.name;
   const parameters = operation?.parameters;
@@ -25,7 +26,7 @@ export function Function({ type: operation, name, children }: FunctionProps) {
 
   if (!children) {
     return (
-      <Declaration name={functionName} refkey={operation}>
+      <Declaration name={functionName} refkey={refkey ?? operation}>
         {code`
           def ${functionName} (${(<Function.Parameters parameters={parameters} />)})${typeExpression}:
             ${(<Function.Body />)}
