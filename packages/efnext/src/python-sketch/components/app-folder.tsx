@@ -1,4 +1,5 @@
 import { Operation, Type } from "@typespec/compiler";
+import { Scope } from "../../framework/components/scope.js";
 import { SourceDirectory } from "../../framework/components/source-directory.js";
 import { SourceFile } from "../../framework/components/source-file.js";
 import { TypeDeclaration } from "../../python/type-declaration.js";
@@ -39,26 +40,28 @@ export function AppFolder({ folder }: AppFolderProps) {
 
   return (
     <SourceDirectory path={folder.moduleName}>
-      <SourceFile path="__init__.py" filetype="python">
-        <InitPy folder={folder} />
-      </SourceFile>
-      {models.length > 0 && (
-        <SourceFile path="models.py" filetype="python">
-          {models}
+      <Scope name={folder.moduleName}>
+        <SourceFile path="__init__.py" filetype="python">
+          <InitPy folder={folder} />
         </SourceFile>
-      )}
-      {operations.length > 0 && (
-        <SourceFile path="operations.py" filetype="python">
-          {operations}
-        </SourceFile>
-      )}
-      {internalOperations.length > 0 && (
-        <SourceFile path="_operations.py" filetype="python">
-          {internalOperations}
-        </SourceFile>
-      )}
+        {models.length > 0 && (
+          <SourceFile path="models.py" filetype="python">
+            {models}
+          </SourceFile>
+        )}
+        {operations.length > 0 && (
+          <SourceFile path="operations.py" filetype="python">
+            {operations}
+          </SourceFile>
+        )}
+        {internalOperations.length > 0 && (
+          <SourceFile path="_operations.py" filetype="python">
+            {internalOperations}
+          </SourceFile>
+        )}
 
-      {subfolders}
+        {subfolders}
+      </Scope>
     </SourceDirectory>
   );
 }
