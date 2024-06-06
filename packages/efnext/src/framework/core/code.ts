@@ -5,6 +5,11 @@ const startWhitespaceRe = /^\s*/;
 const endWhitespaceRe = /[\r\n]+\s*$/;
 const endIndentRe = /[ \t]*$/;
 
+/**
+ * This tagged template function takes literal strings and component substitutions
+ * and handles indent state and merging the literal strings with substitutions into
+ * ComponentChildren that can be nested within a JSX template.
+ */
 export function code(strs: TemplateStringsArray, ...subs: ComponentChildren[]): ComponentChildren {
   // dedent...
   const children: ComponentChildren = [];

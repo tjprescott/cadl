@@ -19,7 +19,7 @@ export function InterfaceMember({ type }: InterfaceMemberProps) {
   if (isOperation(type)) {
     return (
       <>
-        {type.name}(<Function.Parameters parameters={type.parameters} />
+        {type.name}(<Function.Parameters type={type.parameters} />
         ): <TypeExpression type={type.returnType} />;
       </>
     );

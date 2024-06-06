@@ -5,7 +5,7 @@ import { render } from "../src/framework/core/render.js";
 import { createContext, useContext } from "../src/framework/core/context.js";
 
 describe("context api", () => {
-  it("can get context from a parent node", () => {
+  it("can get context from a parent node", async () => {
     const TestContext = createContext();
 
     function Test() {
@@ -19,7 +19,7 @@ describe("context api", () => {
       return value;
     }
 
-    const tree = render(<Test />);
+    const tree = await render(<Test />);
     console.log(tree);
   })
 })

@@ -32,7 +32,14 @@ export interface SourceFile {
   content: string;
 }
 
-export async function renderToSourceFiles(root: SourceNode): Promise<SourceFile[]> {
+interface RenderToSourceFilesOptions {
+  format?: boolean;
+}
+
+export async function renderToSourceFiles(
+  root: SourceNode,
+  options: RenderToSourceFilesOptions = { format: true }
+): Promise<SourceFile[]> {
   const res = await render(root);
   const sourceFiles: SourceFile[] = [];
 

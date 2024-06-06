@@ -9,7 +9,7 @@ import { ScopeContext } from "./scope.js";
 
 export interface SourceFileProps {
   path: string;
-  filetype: "typescript";
+  filetype: "typescript" | "python";
   children?: ComponentChildren[];
 }
 

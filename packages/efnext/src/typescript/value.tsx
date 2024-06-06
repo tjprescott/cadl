@@ -5,6 +5,9 @@ export interface ValueProps {
 
 export function Value({ jsValue, tspValue }: ValueProps) {
   if (jsValue) {
+    if (isVerbatim(jsValue)) {
+      return jsValue.value;
+    }
     switch (typeof jsValue) {
       case "object":
         if (jsValue === null) {
@@ -12,6 +15,11 @@ export function Value({ jsValue, tspValue }: ValueProps) {
         } else {
           return <ObjectValue jsValue={jsValue} />;
         }
+      case "boolean":
+      case "number":
+        return String(jsValue);
+      case "string":
+        return `"${jsValue}"`;
     }
   }
 
@@ -21,6 +29,7 @@ export function Value({ jsValue, tspValue }: ValueProps) {
 export interface ObjectValueProps {
   jsValue?: object;
 }
+
 export function ObjectValue({ jsValue }: ObjectValueProps) {
   if (jsValue) {
     const entries = Object.entries(jsValue);
@@ -40,9 +49,9 @@ export function ObjectValue({ jsValue }: ObjectValueProps) {
           return [curr];
         }
         return [prev, ", ", curr];
-      }, []); // no idea why this works, and why join doesn't.
+      }, []);
 
-    return val;
+    return ["{", val, "}"];
   }
   return <></>;
 }
@@ -62,4 +71,19 @@ ObjectValue.Property = function Property({ name, jsPropertyValue }: ObjectValueP
 
 export function NullValue() {
   return "null";
+}
+
+
+const verbatimSym = Symbol();
+export function isVerbatim(v: unknown): v is Verbatim {
+  return typeof v === "object" && v !== null && (v as any)[verbatimSym];
+}
+
+export interface Verbatim {
+  [verbatimSym]: true,
+  value: string
+}
+
+export function $verbatim(s: string): Verbatim {
+  return { [verbatimSym]: true, value: s }
 }
