@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { assert, describe, it } from "vitest";
 import { Declaration } from "../src/framework/components/declaration.js";
 import { EmitOutput } from "../src/framework/components/emit-output.js";
 import { SourceDirectory } from "../src/framework/components/source-directory.js";
@@ -23,14 +23,18 @@ describe("Source directory component", () => {
       </EmitOutput>
     );
 
-    console.log("Files:", res);
-
-    for (const file of res) {
-      console.log(file.path);
-    }
+    assert.lengthOf(res, 2);
+    assert.include(
+      res.map((x) => x.path),
+      "src/test1.ts"
+    );
+    assert.include(
+      res.map((x) => x.path),
+      "src/test2.ts"
+    );
   });
 
-  it.skip("works with no directory", async () => {
+  it("works with no directory", async () => {
     let res = await renderToSourceFiles(
       <EmitOutput>
         <SourceFile path="test1.ts" filetype="typescript">
@@ -44,10 +48,14 @@ describe("Source directory component", () => {
       </EmitOutput>
     );
 
-    // console.log("Files:", res);
-
-    // for (const file of res) {
-    //   console.log(file.path);
-    // }
+    assert.lengthOf(res, 2);
+    assert.include(
+      res.map((x) => x.path),
+      "test1.ts"
+    );
+    assert.include(
+      res.map((x) => x.path),
+      "test2.ts"
+    );
   });
 });

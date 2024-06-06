@@ -36,27 +36,54 @@ export async function renderToSourceFiles(root: SourceNode): Promise<SourceFile[
   const res = await render(root);
   const sourceFiles: SourceFile[] = [];
 
-  // flat(1) because there is 1 nested node (for the emit context)
-  for (const node of res.flat(1)) {
+  for (const node of res) {
     if (!Array.isArray(node)) {
-      // probably an error to include a string outside a source node.
-      // consider emitting an error
       continue;
     }
 
-    const meta = getMeta(node);
-    console.log(meta); // This is the metanode for the sourceDirectory
-    if (meta.sourceFile) {
-      // When there are source directories we never get here. Are we missing flattening?
-      console.log("Source file");
-      sourceFiles.push({
-        path: meta.sourceFile.path,
-        content: await printFormatted(node, meta.sourceFile.fileType),
-      });
-    }
+    const files = await findRenderedSourceFiles(node);
+    sourceFiles.push(...files);
   }
 
   return sourceFiles;
+}
+
+/**
+ * Walks a tree of rendered nodes and returns all source files found.
+ * @param node a rendered node
+ * @returns a list of rendered source files.
+ */
+async function findRenderedSourceFiles(node: RenderedTreeNode): Promise<SourceFile[]> {
+  const files: SourceFile[] = [];
+
+  // If the node is not an array, there are no source files to find.
+  if (!Array.isArray(node)) {
+    return files;
+  }
+
+  // Walk the children of the node.
+  for (const child of node) {
+    // If the child is not an array, it is a string and not a source file.
+    if (!Array.isArray(child)) {
+      continue;
+    }
+
+    // Get the meta data for the child node. With this we can figure out if
+    // it is a soruce file or not.
+    const meta = getMeta(child);
+    if (meta.sourceFile) {
+      // Extract metadata from the metatree for the rendered source file and add it to the list.
+      files.push({
+        path: meta.sourceFile.path,
+        content: await printFormatted(child, meta.sourceFile.fileType),
+      });
+    } else {
+      // Recursively find source files in the child node.
+      return findRenderedSourceFiles(child);
+    }
+  }
+
+  return files;
 }
 
 export async function render(root: SourceNode): Promise<RenderedTreeNode> {
