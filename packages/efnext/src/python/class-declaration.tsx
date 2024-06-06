@@ -1,7 +1,7 @@
 import { ComponentChildren } from "#jsx/jsx-runtime";
 import { Model } from "@typespec/compiler";
-import { Declaration } from "../../framework/components/declaration.js";
-import { code } from "../../framework/core/code.js";
+import { Declaration } from "../framework/components/declaration.js";
+import { code } from "../framework/core/code.js";
 import { ClassExpression } from "./class-expression.js";
 
 export interface ClassDeclarationProps {

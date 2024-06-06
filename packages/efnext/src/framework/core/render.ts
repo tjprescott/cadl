@@ -86,7 +86,8 @@ async function findRenderedSourceFiles(node: RenderedTreeNode): Promise<SourceFi
       });
     } else {
       // Recursively find source files in the child node.
-      return findRenderedSourceFiles(child);
+      const childFiles = await findRenderedSourceFiles(child);
+      files.push(...childFiles);
     }
   }
 
