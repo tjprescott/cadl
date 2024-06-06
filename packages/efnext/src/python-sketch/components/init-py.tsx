@@ -31,10 +31,10 @@ export function InitPy({ folder }: InitPyProps) {
   }
 
   return code`
-    ${imports}
+    ${imports.join("\n")}
     
     __all__ = [
-      ${all.map((v) => `"{v}"`).join("\n")}
+      ${all.map((v) => `"${v}"`).join("\n") /**Probably need to fix this in code? */}
     ]
 
   `;
