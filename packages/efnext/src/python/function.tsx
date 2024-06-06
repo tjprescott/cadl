@@ -3,6 +3,7 @@ import { Model, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { code } from "../framework/core/code.js";
 import { TypeExpression } from "./type-expression.js";
+import { useNamePolicy } from "../framework/core/name-policy.js";
 
 export interface FunctionProps {
   type?: Operation;
@@ -20,7 +21,7 @@ function coerceArray(v: unknown): any {
 }
 
 export function Function({ type, name, children, refkey }: FunctionProps) {
-  const functionName = name ?? type!.name;
+  const functionName = name ?? useNamePolicy().getName(type!, "function");
   const parameters = type?.parameters;
   const parametersChild = coerceArray(children)?.find(
     (child: any) => child.type === Function.Parameters
