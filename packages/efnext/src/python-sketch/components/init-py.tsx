@@ -1,4 +1,5 @@
 import { code } from "../../framework/core/code.js";
+import { useNamePolicy } from "../../framework/core/name-policy.js";
 import { AppFolderRecord } from "./app-folder.js";
 
 export interface InitPyProps {
@@ -10,6 +11,7 @@ export interface InitPyProps {
  * allow us to change the emitting names at any point.
  */
 export function InitPy({ folder }: InitPyProps) {
+  const namer = useNamePolicy();
   let imports = [];
   let all = [];
 
@@ -19,13 +21,13 @@ export function InitPy({ folder }: InitPyProps) {
   }
 
   if (folder.types.length > 0) {
-    const typeNames = folder.types.map((t) => t.name);
+    const typeNames = folder.types.map((t) => namer.getName(t, "class"));
     imports.push(`from models import ${typeNames.join(",")}`);
     all = all.concat(typeNames);
   }
 
   if (folder.operations.length > 0) {
-    const opNames = folder.operations.map((t) => t.name);
+    const opNames = folder.operations.map((t) => namer.getName(t, "function"));
     imports.push(`from operations import ${opNames.join(",")}`);
     all = all.concat(opNames);
   }
