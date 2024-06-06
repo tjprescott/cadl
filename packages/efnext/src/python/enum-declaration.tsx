@@ -1,7 +1,7 @@
 import { ComponentChildren } from "#jsx/jsx-runtime";
 import { Enum } from "@typespec/compiler";
-import { Declaration } from "../../framework/components/declaration.js";
-import { code } from "../../framework/core/code.js";
+import { Declaration } from "../framework/components/declaration.js";
+import { code } from "../framework/core/code.js";
 import { EnumExpression } from "./enum-expression.js";
 
 export interface EnumDeclarationProps {

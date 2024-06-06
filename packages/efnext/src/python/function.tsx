@@ -1,7 +1,7 @@
 import { SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
-import { Declaration } from "../../framework/components/declaration.js";
-import { code } from "../../framework/core/code.js";
+import { Declaration } from "../framework/components/declaration.js";
+import { code } from "../framework/core/code.js";
 import { TypeExpression } from "./type-expression.js";
 
 export interface FunctionProps {

@@ -1,7 +1,7 @@
 import { ComponentChildren } from "#jsx/jsx-runtime";
 import { Model, ModelProperty } from "@typespec/compiler";
-import { code } from "../../framework/core/code.js";
-import { isModel } from "../../framework/utils/typeguards.js";
+import { code } from "../framework/core/code.js";
+import { isModel } from "../framework/utils/typeguards.js";
 import { ClassMember } from "./class-member.js";
 
 export interface ClassExpressionProps {

@@ -1,6 +1,6 @@
-import { ScopeContext } from "../../framework/components/scope.js";
-import { SourceFileContext } from "../../framework/components/source-file.js";
-import { useContext } from "../../framework/core/context.js";
+import { ScopeContext } from "../framework/components/scope.js";
+import { SourceFileContext } from "../framework/components/source-file.js";
+import { useContext } from "../framework/core/context.js";
 
 export interface ReferenceProps {
   refkey?: unknown;

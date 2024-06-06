@@ -4,7 +4,7 @@ import { SourceFile } from "../../framework/components/source-file.js";
 import { ClientOperation } from "./client-operation.js";
 import { InitPy } from "./init-py.js";
 import { InternalClientOperation } from "./internal-client-operation.js";
-import { TypeDeclaration } from "./type-declaration.js";
+import { TypeDeclaration } from "../../python/type-declaration.js";
 
 export interface AppFolderRecord {
   path: string;

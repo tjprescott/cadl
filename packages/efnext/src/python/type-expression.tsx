@@ -1,5 +1,5 @@
 import { IntrinsicType, Model, Scalar, Type } from "@typespec/compiler";
-import { isArray, isDeclaration, isRecord } from "../../framework/utils/typeguards.js";
+import { isArray, isDeclaration, isRecord } from "../framework/utils/typeguards.js";
 import { ArrayExpression } from "./array-expression.js";
 import { ClassExpression } from "./class-expression.js";
 import { DictionaryExpression } from "./dictionary-expression.js";
