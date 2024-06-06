@@ -11,31 +11,36 @@ export interface FunctionProps {
   children?: SourceNode[];
 }
 
-export function Function({ type: operation, name, children, refkey }: FunctionProps) {
-  // todo: take an Operation type and emit an empty function based on that.
-  const functionName = name ?? operation!.name;
-  const parameters = operation?.parameters;
-  // Gets the return type of the function
-  const typeExpression = operation?.returnType ? (
-    code`
-    -> ${(<TypeExpression type={operation.returnType} />)}
-    `
-  ) : (
-    <></>
-  );
-
-  if (!children) {
-    return (
-      <Declaration name={functionName} refkey={refkey ?? operation}>
-        {code`
-          def ${functionName} (${(<Function.Parameters parameters={parameters} />)})${typeExpression}:
-            ${(<Function.Body />)}
-        `}
-      </Declaration>
-    );
+function coerceArray(v: unknown): any {
+  if (v === null || v === undefined || Array.isArray(v)) {
+    return v;
   }
 
-  return <>{children}</>;
+  return [v];
+}
+
+export function Function({ type, name, children, refkey }: FunctionProps) {
+  const functionName = name ?? type!.name;
+  const parameters = type?.parameters;
+  const parametersChild = coerceArray(children)?.find((child: any) => child.type === Function.Parameters);
+  const bodyChild = coerceArray(children)?.find((child: any) => child.type === Function.Body);
+  const sReturnType = type?.returnType ? <TypeExpression type={type.returnType} /> : undefined;
+  const sParams = parametersChild ? (
+    parametersChild
+  ) : (
+    <Function.Parameters parameters={parameters} />
+  );
+
+  let sBody = bodyChild ? bodyChild : <Function.Body>{children}</Function.Body>;
+
+  return (
+    <Declaration name={functionName} refkey={refkey ?? type}>
+      {code`
+        def ${functionName}(${sParams}) => ${sReturnType}:
+          ${sBody}
+      `}
+    </Declaration>
+  );
 }
 
 export interface FunctionParametersProps {
@@ -43,6 +48,7 @@ export interface FunctionParametersProps {
   children?: SourceNode[];
 }
 
+// todo: update to be inline with typescript framework
 Function.Parameters = function Parameters({ parameters, children }: FunctionParametersProps) {
   if (children) {
     return children;
