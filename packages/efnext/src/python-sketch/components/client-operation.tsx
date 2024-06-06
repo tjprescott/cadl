@@ -22,7 +22,7 @@ export function ClientOperation({ operation }: ClientOperationProps) {
   );
 
   return code`
-    from typings import List
+    from typing import List
 
     ${functionDef}
   `;

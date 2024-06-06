@@ -7,7 +7,7 @@ import { TypeExpression } from "./type-expression.js";
 export interface FunctionProps {
   type?: Operation;
   name?: string;
-  refkey?: unknown
+  refkey?: unknown;
   children?: SourceNode[];
 }
 
@@ -22,7 +22,9 @@ function coerceArray(v: unknown): any {
 export function Function({ type, name, children, refkey }: FunctionProps) {
   const functionName = name ?? type!.name;
   const parameters = type?.parameters;
-  const parametersChild = coerceArray(children)?.find((child: any) => child.type === Function.Parameters);
+  const parametersChild = coerceArray(children)?.find(
+    (child: any) => child.type === Function.Parameters
+  );
   const bodyChild = coerceArray(children)?.find((child: any) => child.type === Function.Body);
   const sReturnType = type?.returnType ? <TypeExpression type={type.returnType} /> : undefined;
   const sParams = parametersChild ? (
@@ -36,7 +38,7 @@ export function Function({ type, name, children, refkey }: FunctionProps) {
   return (
     <Declaration name={functionName} refkey={refkey ?? type}>
       {code`
-        def ${functionName}(${sParams}) => ${sReturnType}:
+        def ${functionName}(${sParams}) -> ${sReturnType}:
           ${sBody}
       `}
     </Declaration>

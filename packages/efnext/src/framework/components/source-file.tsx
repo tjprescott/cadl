@@ -1,6 +1,6 @@
 import { ComponentChildren } from "#jsx/jsx-runtime";
 import { join } from "path";
-import { BinderContext, ModuleScope } from "../core/binder.js";
+import { BinderContext, GlobalScope, ModuleScope } from "../core/binder.js";
 import { createContext, useContext } from "../core/context.js";
 import { MetaNode } from "../core/metatree.js";
 import { getRenderContext } from "../core/render.js";
@@ -35,7 +35,9 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
   if (!binder) {
     throw new Error("Scope requires binder context");
   }
-  const scope = binder.createModuleScope(path);
+
+  const currentScope = useContext(ScopeContext);
+  const scope = binder.createModuleScope(path, currentScope?.parent as ModuleScope | GlobalScope);
   const imports: Map<string, ImportRecord[]> = new Map();
   const sourceFileState: SourceFileState = {
     scope,

@@ -36,7 +36,6 @@ export function AppFolder({ folder }: AppFolderProps) {
   ));
 
   const subfolders = folder.subfolders.map((s) => <AppFolder folder={s} />);
-  console.log(`Models in ${folder.path}: ${models.map((m) => m.props.type.name)}`);
 
   return (
     <SourceDirectory path={folder.moduleName}>

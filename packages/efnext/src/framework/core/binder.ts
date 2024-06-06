@@ -31,7 +31,7 @@ export interface ModuleScope extends ScopeBase {
   path: string;
   /** could probably grow to include namespace etc. */
   children: Map<string, LocalScope | ModuleScope>;
-  parent: GlobalScope; // dunno if modules should be able to nest...
+  parent: GlobalScope | ModuleScope; // dunno if modules should be able to nest...
 }
 
 export interface GlobalScope extends ScopeBase {
@@ -44,7 +44,11 @@ export const BinderContext = createContext<Binder>();
 
 export interface Binder {
   createLocalScope(name: string, parent: LocalScope | undefined, meta?: unknown): LocalScope;
-  createModuleScope(path: string, meta?: unknown): ModuleScope;
+  createModuleScope(
+    path: string,
+    parent: GlobalScope | ModuleScope | undefined,
+    meta?: unknown
+  ): ModuleScope;
   createDeclaration(name: string, scope?: LocalScope, refkey?: unknown): void;
   resolveDeclarationByKey(
     currentScope: LocalScope,
@@ -110,14 +114,18 @@ export function createOutputBinder(): Binder {
     return scope;
   }
 
-  function createModuleScope(path: string, meta?: unknown): ModuleScope {
+  function createModuleScope(
+    path: string,
+    parent: GlobalScope | ModuleScope = globalScope,
+    meta?: unknown
+  ): ModuleScope {
     const scope: ModuleScope = {
       kind: "module",
       path,
       bindings: new Map(),
       bindingsByKey: new Map(),
       children: new Map(),
-      parent: globalScope,
+      parent: parent,
       binder,
       meta,
     };

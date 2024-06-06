@@ -1,7 +1,7 @@
 import { Operation } from "@typespec/compiler";
+import { code } from "../../framework/core/code.js";
 import { useNamePolicy } from "../../framework/core/name-policy.js";
 import { getRefkey } from "../../framework/core/refkeyer.js";
-import { code } from "../../framework/core/code.js";
 import { Function } from "../../python/function.js";
 export interface InternalClientOperationProps {
   operation: Operation;
@@ -19,7 +19,7 @@ export function InternalClientOperation({ operation }: InternalClientOperationPr
   );
 
   return code`
-    from typings import List
+    from typing import List
     
     ${functionDef}
   `;
