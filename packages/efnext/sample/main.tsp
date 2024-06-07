@@ -5,13 +5,14 @@ namespace DemoService {
 
   @route("/people")
   namespace People {
-    model Person {
+    model Person<T> {
       firstName: string;
       lastName: string;
+      special: T;
       pets: Pets.Pet[];
     }
 
-    op listPeople(sortBy?: string): Person[];
+    op listPeople(sortBy?: string): Person<string>[];
   }  
 
 
@@ -19,7 +20,7 @@ namespace DemoService {
   namespace Pets {
     model Pet {
       name: string;
-      owner?: People.Person;
+      owner?: People.Person<int32>;
     }
 
     op listPets(): Pet[];

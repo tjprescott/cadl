@@ -1,7 +1,7 @@
-import { EmitContext, Namespace, Program } from "@typespec/compiler";
-import { getAllHttpServices } from "@typespec/http";
 import { EmitOutput, emit } from "#typespec/emitter/core";
 import { pythonNamePolicy } from "#typespec/emitter/python";
+import { EmitContext, Model, Namespace, Program, Type, navigateType } from "@typespec/compiler";
+import { getAllHttpServices } from "@typespec/http";
 
 import { AppFolder, AppFolderRecord } from "./components/app-folder.js";
 
@@ -9,7 +9,7 @@ export async function $onEmit(context: EmitContext) {
   if (context.program.compilerOptions.noEmit) {
     return;
   }
-  
+
   // queryApp walks the type graph and assembles the AppFolder structure.
   const rootFolder = queryApp(context);
   await emit(
@@ -29,52 +29,47 @@ function queryApp({ program }: EmitContext) {
   }
 
   const service = services[0];
+  const models = new Map<Namespace, Type[]>();
 
-  return getFolderForNamespace(program, service.namespace, "./");
+  // find all models within the service namespace
+  // and organize them by the namespace they're in.
+  navigateType(
+    service.namespace,
+    {
+      model(m) {
+        if (!models.get(m.namespace!)) {
+          models.set(m.namespace!, []);
+        }
+
+        const ms = models.get(m.namespace!)!;
+        ms.push(m);
+      },
+    },
+    {}
+  );
+
+  return getFolderForNamespace(program, service.namespace, "./", models);
 }
 
 function getFolderForNamespace(
   program: Program,
   namespace: Namespace,
-  path: string
+  path: string,
+  models: Map<Namespace, Type[]>
 ): AppFolderRecord {
   const rootFolder: AppFolderRecord = {
     path,
-    types: findTypesInNamespace(namespace),
+    types: findTypesInNamespace(namespace, models),
     moduleName: namespace.name,
     operations: [...namespace.operations.values()],
     subfolders: [...namespace.namespaces.values()].map((n) =>
-      getFolderForNamespace(program, n, n.name)
+      getFolderForNamespace(program, n, n.name, models)
     ),
   };
 
   return rootFolder;
 }
 
-function findTypesInNamespace(root: Namespace) {
-  return [...root.models.values()];
-  // const types: (Type & { name: string })[] = [];
-
-  // function appendType(type: Type) {
-  //   // todo: fix array handling here.
-  //   if ("name" in type && typeof type.name === "string" && type.name !== "Array") {
-  //     types.push(type as any);
-  //   }
-  // }
-
-  // navigateType(
-  //   root,
-  //   {
-  //     model: appendType,
-  //     namespace(n) {
-  //       if (n !== root) {
-  //         return ListenerFlow.NoRecursion;
-  //       }
-  //       return undefined;
-  //     },
-  //   },
-  //   {}
-  // );
-
-  // return types;
+function findTypesInNamespace(root: Namespace, models: Map<Namespace, Type[]>) {
+  return models.get(root) as Model[]?? [];
 }
