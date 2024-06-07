@@ -15,7 +15,6 @@ export function ClassDeclaration({ type, name, children }: ClassDeclarationProps
   return (
     <Declaration name={className} refkey={type}>
       {code`
-        from typing import List, Union
         class ${className}:
           ${(<ClassExpression type={type} />)}
       `}

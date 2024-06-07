@@ -5,7 +5,7 @@ import { createNamePolicy } from "../framework/core/name-policy.js";
 
 type NameKinds = "classMember" | "class" | "function";
 
-export const namePolicy = createNamePolicy<NameKinds>((type, kind) => {
+export const pythonNamePolicy = createNamePolicy<NameKinds>((type, kind) => {
   if (!("name" in type && typeof type.name === "string")) {
     return "unknown name";
   }

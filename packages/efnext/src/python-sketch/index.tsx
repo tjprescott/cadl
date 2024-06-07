@@ -3,7 +3,7 @@ import { getAllHttpServices } from "@typespec/http";
 import { EmitOutput } from "../framework/components/index.js";
 import { emit } from "../framework/core/emit.js";
 import { AppFolder, AppFolderRecord } from "./components/app-folder.js";
-import { namePolicy } from "./naming-policy.js";
+import { pythonNamePolicy } from "../python/naming-policy.js";
 
 export async function $onEmit(context: EmitContext) {
   if (context.program.compilerOptions.noEmit) {
@@ -14,7 +14,7 @@ export async function $onEmit(context: EmitContext) {
   const rootFolder = queryApp(context);
   await emit(
     context,
-    <EmitOutput namePolicy={namePolicy}>
+    <EmitOutput namePolicy={pythonNamePolicy}>
       <AppFolder folder={rootFolder} />
     </EmitOutput>
   );

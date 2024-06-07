@@ -4,9 +4,16 @@ import { useContext } from "../framework/core/context.js";
 
 export interface ReferenceProps {
   refkey?: unknown;
+  builtin?: readonly [string, string] | [string, string];
 }
-export async function Reference({ refkey }: ReferenceProps) {
+export async function Reference({ refkey, builtin }: ReferenceProps) {
   const sourceFile = useContext(SourceFileContext);
+
+  if (builtin) {
+    sourceFile!.addImport({ importPath: builtin[0], name: builtin[1]});
+    return builtin[1];
+  }
+  
   const scope = useContext(ScopeContext);
   if (!scope) {
     throw new Error("Need scope context to form references");

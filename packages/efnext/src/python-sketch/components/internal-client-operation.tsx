@@ -12,15 +12,9 @@ export interface InternalClientOperationProps {
 export function InternalClientOperation({ operation }: InternalClientOperationProps) {
   const namer = useNamePolicy();
   const name = `_` + namer.getName(operation, "function");
-  const functionDef = (
+  return (
     <Function type={operation} name={name} refkey={getRefkey(operation, "internal")}>
       raise NotImplementedError
     </Function>
   );
-
-  return code`
-    from typing import List
-    
-    ${functionDef}
-  `;
 }

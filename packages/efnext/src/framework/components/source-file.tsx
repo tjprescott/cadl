@@ -67,7 +67,7 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
 
   return (
     <SourceFileContext.Provider value={sourceFileState}>
-      <ImportContainer />
+      <ImportContainer /><br />
       <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>
     </SourceFileContext.Provider>
   );

@@ -6,6 +6,7 @@ import { DictionaryExpression } from "./dictionary-expression.js";
 import { Reference } from "./reference.js";
 import { TypeLiteral } from "./type-literal.js";
 import { UnionExpression } from "./union-expression.js";
+import { stdlib } from "./builtins.js";
 
 export interface TypeExpressionProps {
   type: Type;
@@ -21,7 +22,7 @@ export function TypeExpression({ type }: TypeExpressionProps) {
   switch (type.kind) {
     case "Scalar":
     case "Intrinsic":
-      return <>{getScalarIntrinsicExpression(type)}</>;
+      return getScalarIntrinsicExpression(type);
     case "Boolean":
     case "Number":
     case "String":
@@ -31,7 +32,7 @@ export function TypeExpression({ type }: TypeExpressionProps) {
     case "Tuple":
       return (
         <>
-          Tuple[
+          <Reference builtin={stdlib.typing.Tuple} />[
           {type.values.map((element) => (
             <>
               <TypeExpression type={element} />,
@@ -43,7 +44,7 @@ export function TypeExpression({ type }: TypeExpressionProps) {
     case "EnumMember":
       return (
         <>
-          Literal[{type.enum.name}.{type.name}.value]
+          <Reference builtin={stdlib.typing.Literal} />[{type.enum.name}.{type.name}.value]
         </>
       );
     case "Model":

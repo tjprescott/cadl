@@ -1,5 +1,7 @@
 import { Union } from "@typespec/compiler";
 import { TypeExpression } from "./type-expression.js";
+import { Reference } from "./reference.js";
+import { stdlib } from "./builtins.js";
 
 export interface UnionExpressionProps {
   type: Union;
@@ -10,7 +12,7 @@ export function UnionExpression({ type }: UnionExpressionProps) {
 
   return (
     <>
-      Union[
+      <Reference builtin={stdlib.typing.Tuple} />[
       {variants.map((variant, index) => {
         const isLast = index === variants.length - 1;
         return (

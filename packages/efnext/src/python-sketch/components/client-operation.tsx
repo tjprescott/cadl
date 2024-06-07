@@ -15,15 +15,9 @@ interface ClientOperationProps {
  * Need to support so that line is no longer necessary.
  */
 export function ClientOperation({ operation }: ClientOperationProps) {
-  const functionDef = (
+  return (
     <Function type={operation}>
       return <Reference refkey={getRefkey(operation, "internal")} />
     </Function>
   );
-
-  return code`
-    from typing import List
-
-    ${functionDef}
-  `;
 }
