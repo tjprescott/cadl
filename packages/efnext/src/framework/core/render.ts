@@ -27,7 +27,7 @@ const intrinsicMap: Record<string, string> = {
   br: "\n",
 };
 
-export interface SourceFile {
+export interface SourceFileRecord {
   path: string;
   content: string;
 }
@@ -39,9 +39,9 @@ interface RenderToSourceFilesOptions {
 export async function renderToSourceFiles(
   root: SourceNode,
   options: RenderToSourceFilesOptions = { format: true }
-): Promise<SourceFile[]> {
+): Promise<SourceFileRecord[]> {
   const res = await render(root);
-  const sourceFiles: SourceFile[] = [];
+  const sourceFiles: SourceFileRecord[] = [];
 
   for (const node of res) {
     if (!Array.isArray(node)) {
@@ -60,8 +60,8 @@ export async function renderToSourceFiles(
  * @param node a rendered node
  * @returns a list of rendered source files.
  */
-async function findRenderedSourceFiles(node: RenderedTreeNode): Promise<SourceFile[]> {
-  const files: SourceFile[] = [];
+async function findRenderedSourceFiles(node: RenderedTreeNode): Promise<SourceFileRecord[]> {
+  const files: SourceFileRecord[] = [];
 
   // If the node is not an array, there are no source files to find.
   if (!Array.isArray(node)) {

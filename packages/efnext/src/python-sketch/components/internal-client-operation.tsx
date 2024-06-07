@@ -1,8 +1,7 @@
 import { Operation } from "@typespec/compiler";
-import { code } from "../../framework/core/code.js";
-import { useNamePolicy } from "../../framework/core/name-policy.js";
-import { getRefkey } from "../../framework/core/refkeyer.js";
-import { Function } from "../../python/function.js";
+import { getRefkey, useNamePolicy } from "#typespec/emitter/core";
+import { Function } from "#typespec/emitter/python";
+
 export interface InternalClientOperationProps {
   operation: Operation;
 }

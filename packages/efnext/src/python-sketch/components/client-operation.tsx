@@ -1,8 +1,6 @@
 import { Operation } from "@typespec/compiler";
-import { code } from "../../framework/core/code.js";
-import { getRefkey } from "../../framework/core/refkeyer.js";
-import { Function } from "../../python/function.js";
-import { Reference } from "../../python/reference.js";
+import { getRefkey } from "#typespec/emitter/core";
+import { Function, Reference } from "#typespec/emitter/python";
 
 interface ClientOperationProps {
   operation: Operation;

@@ -39,6 +39,12 @@
     },
     "#jsx/jsx-dev-runtime": {
       "default": "./dist/src/framework/core/jsx.js"
+    },
+    "#typespec/emitter/python": {
+      "default": "./dist/src/python/index.js"
+    },
+    "#typespec/emitter/core": {
+      "default": "./dist/src/framework/index.js"
     }
   },
   "scripts": {

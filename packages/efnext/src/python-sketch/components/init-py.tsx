@@ -1,5 +1,4 @@
-import { code } from "../../framework/core/code.js";
-import { useNamePolicy } from "../../framework/core/name-policy.js";
+import { code, useNamePolicy } from "#typespec/emitter/core"
 import { AppFolderRecord } from "./app-folder.js";
 
 export interface InitPyProps {

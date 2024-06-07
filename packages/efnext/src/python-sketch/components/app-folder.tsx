@@ -1,8 +1,7 @@
 import { Operation, Type } from "@typespec/compiler";
-import { Scope } from "../../framework/components/scope.js";
-import { SourceDirectory } from "../../framework/components/source-directory.js";
-import { SourceFile } from "../../framework/components/source-file.js";
-import { TypeDeclaration } from "../../python/type-declaration.js";
+import { Scope, SourceDirectory, SourceFile } from "#typespec/emitter/core";
+import { TypeDeclaration } from "#typespec/emitter/python";
+
 import { ClientOperation } from "./client-operation.js";
 import { InitPy } from "./init-py.js";
 import { InternalClientOperation } from "./internal-client-operation.js";

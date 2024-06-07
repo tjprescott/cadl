@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { RenderedTreeNode, SourceFile as SF, render, renderToSourceFiles } from "../src/framework/core/render.js";
+import { RenderedTreeNode, SourceFileRecord as SF, render, renderToSourceFiles } from "../src/framework/core/render.js";
 import { EmitOutput } from "../src/framework/components/emit-output.js";
 import { SourceFile } from "../src/framework/components/source-file.js";
 import { Function } from "../src/typescript/function.js";

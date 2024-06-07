@@ -2,7 +2,7 @@ import { createContext } from "./context.js";
 
 export interface OutputDeclaration {
   name: string;
-  scope: Scope;
+  scope: AnyScope;
   refkey: unknown;
 }
 
@@ -10,19 +10,19 @@ export interface ScopeBase {
   kind: string;
   bindings: Map<string, OutputDeclaration>;
   bindingsByKey: Map<unknown, OutputDeclaration>;
-  children: Map<string, Scope>;
-  parent: Scope | undefined;
+  children: Map<string, AnyScope>;
+  parent: AnyScope | undefined;
   binder: Binder;
   meta: any;
 }
 
 // could include package scope
-export type Scope = LocalScope | ModuleScope | GlobalScope;
+export type AnyScope = LocalScope | ModuleScope | GlobalScope;
 
 export interface LocalScope extends ScopeBase {
   kind: "local";
   name: string;
-  parent: Scope;
+  parent: AnyScope;
   children: Map<string, LocalScope>;
 }
 
@@ -67,9 +67,9 @@ export interface ResolutionFailure {
 export interface ResolutionResult {
   resolved: true;
   targetDeclaration: OutputDeclaration;
-  pathUp: Scope[];
-  pathDown: Scope[];
-  commonScope: Scope | undefined;
+  pathUp: AnyScope[];
+  pathDown: AnyScope[];
+  commonScope: AnyScope | undefined;
 }
 
 export function createOutputBinder(): Binder {
@@ -95,7 +95,11 @@ export function createOutputBinder(): Binder {
   const waitingDeclarations = new Map<unknown, ((value: unknown) => void)[]>();
   return binder;
 
-  function createLocalScope(name: string, parent: Scope = globalScope, meta?: unknown): LocalScope {
+  function createLocalScope(
+    name: string,
+    parent: AnyScope = globalScope,
+    meta?: unknown
+  ): LocalScope {
     const scope: LocalScope = {
       kind: "local",
       name,
@@ -135,7 +139,7 @@ export function createOutputBinder(): Binder {
     return scope;
   }
 
-  function createDeclaration(name: string, scope: Scope = globalScope, refkey: unknown) {
+  function createDeclaration(name: string, scope: AnyScope = globalScope, refkey: unknown) {
     const declaration: OutputDeclaration = {
       name,
       scope,
@@ -201,7 +205,7 @@ export function createOutputBinder(): Binder {
     });
   }
 
-  function scopeChain(scope: Scope | undefined) {
+  function scopeChain(scope: AnyScope | undefined) {
     const chain = [];
     while (scope) {
       chain.unshift(scope);
