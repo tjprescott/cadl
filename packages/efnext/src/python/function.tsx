@@ -53,6 +53,7 @@ export interface FunctionParametersProps {
 
 // todo: update to be inline with typescript framework
 Function.Parameters = function Parameters({ parameters, children }: FunctionParametersProps) {
+  const namer = useNamePolicy();
   if (children) {
     return children;
   } else {
@@ -64,7 +65,7 @@ Function.Parameters = function Parameters({ parameters, children }: FunctionPara
           const optionality = param.optional ? "?" : "";
           return (
             <>
-              {param.name}
+              {namer.getName(param, "parameter")}
               {optionality}: <TypeExpression type={param.type} />
               {!isLast ? ", " : ""}
             </>

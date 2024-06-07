@@ -11,7 +11,7 @@ namespace DemoService {
       pets: Pets.Pet[];
     }
 
-    op listPeople(): Person[];
+    op listPeople(sortBy?: string): Person[];
   }  
 
 
