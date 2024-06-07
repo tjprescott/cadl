@@ -6,6 +6,10 @@ import { AppFolder, AppFolderRecord } from "./components/app-folder.js";
 import { namePolicy } from "./naming-policy.js";
 
 export async function $onEmit(context: EmitContext) {
+  if (context.program.compilerOptions.noEmit) {
+    return;
+  }
+  
   // queryApp walks the type graph and assembles the AppFolder structure.
   const rootFolder = queryApp(context);
   await emit(
