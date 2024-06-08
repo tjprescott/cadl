@@ -6,16 +6,16 @@ import { InterfaceExpression } from "./interface-expression.js";
 import { Reference } from "./reference.js";
 
 export interface InterfaceDeclarationProps {
-  type: Model | Interface;
+  type?: Model | Interface;
   name?: string;
   children?: ComponentChildren;
 }
 
 export function InterfaceDeclaration({ type, name, children }: InterfaceDeclarationProps) {
   let extendsClause = undefined;
-  const ifaceName = name ?? type.name;
+  const ifaceName = name ?? type!.name;
 
-  if (isModel(type) && type.baseModel) {
+  if (type && isModel(type) && type.baseModel) {
     extendsClause = (
       <>
         extends <Reference refkey={type.baseModel} />

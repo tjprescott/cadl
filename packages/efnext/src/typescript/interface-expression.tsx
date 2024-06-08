@@ -5,7 +5,7 @@ import { Block } from "./block.js";
 import { InterfaceMember } from "./interface-member.js";
 
 export interface InterfaceExpressionProps {
-  type: Model | Interface;
+  type?: Model | Interface;
   children?: ComponentChildren;
 }
 
@@ -13,14 +13,16 @@ export function InterfaceExpression({ type, children }: InterfaceExpressionProps
   const members = [];
   let typeMembers: IterableIterator<ModelProperty | Operation> | undefined;
 
-  if (isModel(type)) {
-    typeMembers = type.properties.values();
-  } else if (isInterface(type)) {
-    typeMembers = type.operations.values();
-  }
+  if (type) {
+    if (isModel(type)) {
+      typeMembers = type.properties.values();
+    } else if (isInterface(type)) {
+      typeMembers = type.operations.values();
+    }
 
-  for (const prop of typeMembers ?? []) {
-    members.push(<InterfaceMember type={prop} />);
+    for (const prop of typeMembers ?? []) {
+      members.push(<InterfaceMember type={prop} />);
+    }
   }
 
   if (children) {

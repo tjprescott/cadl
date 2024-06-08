@@ -1,16 +1,22 @@
+import { code } from "#typespec/emitter/core";
+
 export interface ValueProps {
   jsValue?: unknown;
   tspValue?: unknown;
 }
 
-export function Value({ jsValue, tspValue }: ValueProps) {
-  if (jsValue) {
+export function Value(props: ValueProps) {
+  const { tspValue, jsValue } = props;
+
+  if ("jsValue" in props) {
     if (isVerbatim(jsValue)) {
       return jsValue.value;
     }
     switch (typeof jsValue) {
       case "object":
-        if (jsValue === null) {
+        if (Array.isArray(jsValue)) {
+          return <ArrayValue jsValue={jsValue} />
+        } else if (jsValue === null) {
           return "null";
         } else {
           return <ObjectValue jsValue={jsValue} />;
@@ -20,6 +26,8 @@ export function Value({ jsValue, tspValue }: ValueProps) {
         return String(jsValue);
       case "string":
         return `"${jsValue}"`;
+      case "undefined":
+        return "undefined";
     }
   }
 
@@ -54,6 +62,17 @@ export function ObjectValue({ jsValue }: ObjectValueProps) {
     return ["{", val, "}"];
   }
   return <></>;
+}
+
+export interface ArrayValueProps {
+  jsValue: unknown[];
+}
+export function ArrayValue({jsValue}: ArrayValueProps) {
+  const itemValues = jsValue.map(v => <><Value jsValue={v} />,</>);
+  
+  return code`
+    [${itemValues}]
+  `
 }
 
 export interface ObjectValuePropertyProps {
