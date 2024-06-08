@@ -46,7 +46,14 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
       if (!imports.has(record.importPath)) {
         imports.set(record.importPath, []);
       }
+
       const records = imports.get(record.importPath)!;
+
+      // todo: consider making this a set.
+      if (records.find(r => r.name === record.name)) {
+        return;
+      }
+
       records.push(record);
     },
   };
@@ -54,11 +61,11 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
     let importString = "";
     for (const [importPath, records] of imports) {
       if (filetype === "typescript") {
-        importString += `import {${records.map((r) => r.name).join(",")}} from "${importPath.replace(/\.ts$/, ".js")}"\n`;
+        importString += `import {${records.map((r) => r.name).join(", ")}} from "${importPath.replace(/\.ts$/, ".js")}"\n`;
       }
 
       if (filetype === "python") {
-        importString += `from ${importPath.replace(/\.py$/, "")} import ${records.map((r) => r.name).join(",")}\n`;
+        importString += `from ${importPath.replace(/\.py$/, "")} import ${records.map((r) => r.name).join(", ")}\n`;
       }
     }
 

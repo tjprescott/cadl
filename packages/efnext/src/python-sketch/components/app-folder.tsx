@@ -25,7 +25,7 @@ type Declaration = Type & { name: string };
  */
 export function AppFolder({ folder }: AppFolderProps) {
   const models = folder.types.map((t) => (
-    <TypeDeclaration type={t} /> // rote conversion of typespec type to python type
+    [<TypeDeclaration type={t} />, '\n'] // rote conversion of typespec type to python type
   ));
 
   const operations = folder.operations.map((o) => <ClientOperation operation={o} />);

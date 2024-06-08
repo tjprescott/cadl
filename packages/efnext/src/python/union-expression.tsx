@@ -12,12 +12,12 @@ export function UnionExpression({ type }: UnionExpressionProps) {
 
   return (
     <>
-      <Reference builtin={stdlib.typing.Tuple} />[
+      <Reference builtin={stdlib.typing.Union} />[
       {variants.map((variant, index) => {
         const isLast = index === variants.length - 1;
         return (
           <>
-            <TypeExpression type={variant.type} /> {!isLast && ", "}
+            <TypeExpression type={variant.type} />{!isLast && ", "}
           </>
         );
       })}
