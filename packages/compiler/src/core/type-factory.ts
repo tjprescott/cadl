@@ -77,7 +77,7 @@ export function createTypeFactory(program: Program, realm?: Realm) {
     scalar(
       ...args: [...DecoratorArgs[], string, ScalarOptions] | [...DecoratorArgs[], string]
     ): Scalar {
-      const opts = extractArgs<never, ScalarOptions>(args, true);
+      const opts = extractArgs<never, ScalarOptions>(args, false);
       const type: Scalar = program.checker.createType({
         kind: "Scalar",
         decorators: opts.decorators,
@@ -98,11 +98,39 @@ export function createTypeFactory(program: Program, realm?: Realm) {
         | [...DecoratorArgs[], string, ModelProperty[], ModelOptions]
         | [...DecoratorArgs[], string, ModelProperty[]]
     ): Model {
-      return {} as any;
+      const opts = extractArgs<ModelProperty[], ModelOptions>(args);
+
+      const model: Model = program.checker.createType({
+        kind: "Model",
+        name: opts.name!,
+        decorators: opts.decorators,
+        properties: createRekeyableMap(opts.body.map((p) => [p.name, p])),
+        indexer: undefined,
+        baseModel: opts.options.extends,
+        namespace: opts.options.namespace,
+        node: undefined as any,
+        derivedModels: [],
+        sourceModels: [],
+      });
+
+      finishType(model);
+
+      return model;
     },
 
     modelProperty(...args: [...DecoratorArgs[], string, Type]): ModelProperty {
-      return {} as any;
+      const opts = extractArgs<ModelProperty, never>(args);
+      const property: ModelProperty = program.checker.createType({
+        kind: "ModelProperty",
+        name: opts.name!,
+        decorators: opts.decorators,
+        type: opts.body,
+        node: undefined as any,
+        optional: false,
+      });
+
+      finishType(property);
+      return property;
     },
 
     union(...args: [...DecoratorArgs[], Type[] | UnionVariant[]]): Union {

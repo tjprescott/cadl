@@ -41,6 +41,7 @@ export {
   setTypeSpecNamespace,
 } from "./library.js";
 export * from "./module-resolver.js";
+export * from "./mutator.js";
 export { NodeHost } from "./node-host.js";
 export { Numeric, isNumeric } from "./numeric.js";
 export * from "./options.js";
@@ -49,8 +50,10 @@ export * from "./parser.js";
 export * from "./path-utils.js";
 export * from "./program.js";
 export { isProjectedProgram } from "./projected-program.js";
+export * from "./realm.js";
 export * from "./scanner.js";
 export * from "./semantic-walker.js";
 export { createSourceFile, getSourceFileKindFromExt } from "./source-file.js";
+export * from "./type-factory.js";
 export * from "./type-utils.js";
 export * from "./types.js";
