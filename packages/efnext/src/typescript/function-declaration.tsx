@@ -1,5 +1,5 @@
 import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
-import { Model, Operation } from "@typespec/compiler";
+import { Model, ModelProperty, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { code } from "../framework/core/code.js";
 import { Block } from "./block.js";
@@ -64,7 +64,7 @@ export function FunctionDeclaration({
 
 export interface FunctionParametersProps {
   type?: Model;
-  parameters?: Record<string, string>;
+  parameters?: Record<string, string> | ModelProperty[];
   children?: SourceNode[];
 }
 
@@ -76,26 +76,29 @@ FunctionDeclaration.Parameters = function Parameters({
   if (children) {
     return children;
   } else if (parameters) {
+    if (Array.isArray(parameters)) {
+      return buildParameters(parameters);
+    }
     return Object.entries(parameters).map(([key, value]) => [key, ":", value, ","]);
   } else {
     const params = Array.from(type?.properties.values() ?? []);
-    return (
-      <WrappingParameter type={type}>
-        {params.map((param, index) => {
-          const isLast = index === params.length - 1;
-          const optionality = param.optional ? "?" : "";
-          return (
-            <>
-              {param.name}
-              {optionality}: <TypeExpression type={param.type} />
-              {!isLast ? ", " : ""}
-            </>
-          );
-        })}
-      </WrappingParameter>
-    );
+    return <WrappingParameter type={type}>{buildParameters(params)}</WrappingParameter>;
   }
 };
+
+function buildParameters(params: ModelProperty[]): SourceNode[] {
+  return params.map((param, index) => {
+    const isLast = index === params.length - 1;
+    const optionality = param.optional ? "?" : "";
+    return (
+      <>
+        {param.name}
+        {optionality}: <TypeExpression type={param.type} />
+        {!isLast ? ", " : ""}
+      </>
+    );
+  });
+}
 
 function WrappingParameter({ type, children }: { type?: Model; children?: ComponentChildren }) {
   if (!type || !type.name) {
