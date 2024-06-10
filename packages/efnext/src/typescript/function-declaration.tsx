@@ -1,10 +1,11 @@
 import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
+import { code } from "../framework/core/code.js";
 import { Block } from "./block.js";
 import { TypeExpression } from "./type-expression.js";
 
-export interface FunctionProps {
+export interface FunctionDeclarationProps {
   type?: Operation;
   refkey?: unknown;
   name?: string;
@@ -20,13 +21,21 @@ function coerceArray(v: unknown): any {
   return [v];
 }
 
-export function Function({ type, parameters, name, refkey, children }: FunctionProps) {
+export function FunctionDeclaration({
+  type,
+  parameters,
+  name,
+  refkey,
+  children,
+}: FunctionDeclarationProps) {
   const functionName = name ?? type!.name;
 
   const parametersChild = coerceArray(children)?.find(
-    (child: any) => child.type === Function.Parameters
+    (child: any) => child.type === FunctionDeclaration.Parameters
   );
-  const bodyChild = coerceArray(children)?.find((child: any) => child.type === Function.Body);
+  const bodyChild = coerceArray(children)?.find(
+    (child: any) => child.type === FunctionDeclaration.Body
+  );
 
   const sReturnType = type?.returnType ? (
     <>
@@ -36,10 +45,14 @@ export function Function({ type, parameters, name, refkey, children }: FunctionP
   const sParams = parametersChild ? (
     parametersChild
   ) : (
-    <Function.Parameters type={type?.parameters} parameters={parameters} />
+    <FunctionDeclaration.Parameters type={type?.parameters} parameters={parameters} />
   );
 
-  let sBody = bodyChild ? bodyChild : <Function.Body>{children}</Function.Body>;
+  let sBody = bodyChild ? (
+    bodyChild
+  ) : (
+    <FunctionDeclaration.Body>{children}</FunctionDeclaration.Body>
+  );
 
   return (
     <Declaration name={functionName} refkey={refkey ?? type}>
@@ -55,7 +68,11 @@ export interface FunctionParametersProps {
   children?: SourceNode[];
 }
 
-Function.Parameters = function Parameters({ type, parameters, children }: FunctionParametersProps) {
+FunctionDeclaration.Parameters = function Parameters({
+  type,
+  parameters,
+  children,
+}: FunctionParametersProps) {
   if (children) {
     return children;
   } else if (parameters) {
@@ -63,7 +80,7 @@ Function.Parameters = function Parameters({ type, parameters, children }: Functi
   } else {
     const params = Array.from(type?.properties.values() ?? []);
     return (
-      <>
+      <WrappingParameter type={type}>
         {params.map((param, index) => {
           const isLast = index === params.length - 1;
           const optionality = param.optional ? "?" : "";
@@ -75,16 +92,27 @@ Function.Parameters = function Parameters({ type, parameters, children }: Functi
             </>
           );
         })}
-      </>
+      </WrappingParameter>
     );
   }
 };
+
+function WrappingParameter({ type, children }: { type?: Model; children?: ComponentChildren }) {
+  if (!type || !type.name) {
+    return <>{children}</>;
+  }
+
+  const paramName = type.name; // TODO: rename
+  return code`
+  ${paramName}: {${children}}
+  `;
+}
 
 export interface FunctionBodyProps {
   operation?: Operation;
   children?: SourceNode[];
 }
 
-Function.Body = function Body({ operation, children }: FunctionBodyProps) {
+FunctionDeclaration.Body = function Body({ operation, children }: FunctionBodyProps) {
   return children;
 };

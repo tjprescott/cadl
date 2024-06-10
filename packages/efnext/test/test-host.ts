@@ -1,17 +1,21 @@
 import { Diagnostic, Program, resolvePath } from "@typespec/compiler";
 import {
-  TypeSpecTestLibrary,
   createTestHost,
   createTestWrapper,
   expectDiagnosticEmpty,
 } from "@typespec/compiler/testing";
+import { HttpTestLibrary } from "@typespec/http/testing";
 import { TestLibrary } from "../src/testing/index.js";
 
 export async function createTypespecCliTestHost(
-  options: { libraries: TypeSpecTestLibrary[] } = { libraries: [] }
+  options: { libraries: "Http"[] } = { libraries: [] }
 ) {
+  const libraries = [TestLibrary];
+  if (options.libraries.includes("Http")) {
+    libraries.push(HttpTestLibrary);
+  }
   return createTestHost({
-    libraries: [TestLibrary, ...options.libraries],
+    libraries,
   });
 }
 
@@ -51,7 +55,7 @@ export async function emit(code: string): Promise<Record<string, string>> {
 
 export async function getProgram(
   code: string,
-  options: { libraries: TypeSpecTestLibrary[] } = { libraries: [] }
+  options: { libraries: "Http"[] } = { libraries: [] }
 ): Promise<Program> {
   const host = await createTypespecCliTestHost(options);
   const wrapper = createTestWrapper(host, {

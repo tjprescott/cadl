@@ -2,7 +2,7 @@ export * from "./array-expression.js";
 export * from "./block.js";
 export * from "./enum-declaration.js";
 export * from "./enum-expression.js";
-export * from "./function.js";
+export * from "./function-declaration.js";
 export * from "./interface-declaration.js";
 export * from "./interface-expression.js";
 export * from "./interface-member.js";

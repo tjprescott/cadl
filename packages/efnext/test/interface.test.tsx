@@ -216,6 +216,46 @@ describe("Typescript Interface", () => {
         );
       });
 
+      it("should handle spread and non spread model parameters", async () => {
+        const program = await getProgram(`
+        namespace DemoService;
+
+        model Foo {
+          name: string
+        }
+    
+        interface WidgetOperations {
+          op getName(foo: Foo): string;
+          op getOtherName(...Foo): string
+        }
+        `);
+
+        const [namespace] = program.resolveTypeReference("DemoService");
+        const interfaces = Array.from((namespace as Namespace).interfaces.values());
+        const models = Array.from((namespace as Namespace).models.values());
+
+        let res = await render(
+          <EmitOutput>
+            <SourceFile filetype="typescript" path="test.ts">
+              <InterfaceDeclaration type={interfaces[0]} />
+              <InterfaceDeclaration type={models[0]} />
+            </SourceFile>
+          </EmitOutput>
+        );
+
+        await assertEqual(
+          res,
+          `interface WidgetOperations {
+          getName(foo: Foo): string;
+          getOtherName(name: string): string
+        }
+        interface Foo {
+          name: string;
+        }  
+        `
+        );
+      });
+
       it("creates an interface with Model references", async () => {
         const program = await getProgram(`
         namespace DemoService;

@@ -3,7 +3,7 @@ import { dirname, join } from "path";
 import { format } from "prettier";
 import { EmitOutput, SourceFile } from "../src/framework/components/index.js";
 import { EnumDeclaration } from "../src/typescript/enum-declaration.js";
-import { Function } from "../src/typescript/function.js";
+import { FunctionDeclaration } from "../src/typescript/function-declaration.js";
 import { InterfaceDeclaration } from "../src/typescript/interface-declaration.js";
 import { ScalarDeclaration } from "../src/typescript/scalar-declaration.js";
 import { UnionDeclaration } from "../src/typescript/union-declaration.js";
@@ -45,7 +45,7 @@ export function emitTypescriptInterfaces(program: Program) {
               <InterfaceDeclaration type={model} />
             ))}
             {operations.map((operation) => (
-              <Function type={operation} />
+              <FunctionDeclaration type={operation} />
             ))}
             {enums.map((enumType) => (
               <EnumDeclaration type={enumType} />

@@ -96,7 +96,7 @@ describe("e2e operation mutator", () => {
         @get foo(): void;
       }
         `,
-      { libraries: [HttpTestLibrary] }
+      { libraries: ["Http"] }
     );
 
     const namespace = Array.from(program.getGlobalNamespaceType().namespaces.values()).filter(
