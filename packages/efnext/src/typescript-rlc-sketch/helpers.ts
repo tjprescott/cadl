@@ -1,5 +1,6 @@
 import {
   EmitContext,
+  Model,
   ModelProperty,
   Mutator,
   MutatorFlow,
@@ -10,6 +11,7 @@ import {
 } from "@typespec/compiler";
 import { HttpOperation, getHttpOperation } from "@typespec/http";
 import { createContext, useContext } from "../framework/core/context.js";
+import { isModel } from "../framework/utils/typeguards.js";
 
 export const HelperContext = createContext<ReturnType<typeof getStateHelpers>>();
 
@@ -44,15 +46,12 @@ const toRestOperation: Mutator = {
         return;
       }
 
-      clone.name = httpOperation.verb;
-
       const bodyParam = httpOperation.parameters.body?.type;
       const queryParams = getHttpParameters(httpOperation, "query");
       const headerParams = getHttpParameters(httpOperation, "header");
 
-      clearParameters(clone);
-
-      clone.parameters.name = "requestOptions";
+      clone.name = httpOperation.verb;
+      clone.parameters.properties.clear();
 
       if (bodyParam) {
         setBodyParameter(clone, realm, bodyParam);
@@ -65,9 +64,23 @@ const toRestOperation: Mutator = {
       if (headerParams.length) {
         setHeaderParameters(clone, realm, headerParams);
       }
+
+      const optionality = hasRequiredProperties(clone.parameters) ? "" : "?";
+
+      clone.parameters.name = `options${optionality}`;
     },
   },
 };
+
+function hasRequiredProperties(model: Model): boolean {
+  for (const prop of model.properties.values()) {
+    if (!prop.optional) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 /**
  * Retrieves the parameters of a given type from an HTTP operation.
@@ -76,22 +89,11 @@ const toRestOperation: Mutator = {
  * @param {string} type - The type of parameters to retrieve (e.g., "query", "header").
  * @returns {Array} - An array of parameters of the specified type.
  */
-function getHttpParameters(
+export function getHttpParameters(
   httpOperation: HttpOperation,
-  type: "query" | "header"
+  type: "query" | "header" | "path"
 ): ModelProperty[] {
   return httpOperation.parameters.parameters.filter((p) => p.type === type).map((p) => p.param);
-}
-
-/**
- * Clears all parameters on the operation.
- *
- * @param {object} operation - The operation to be cleared.
- */
-function clearParameters(operation: Operation): void {
-  for (const [key] of operation.parameters.properties) {
-    operation.parameters.properties.delete(key);
-  }
 }
 
 /**
@@ -102,9 +104,13 @@ function clearParameters(operation: Operation): void {
  * @param {object} bodyParam - The body parameter to set.
  */
 function setBodyParameter(op: Operation, realm: Realm, bodyParam: Type): void {
+  if (!isModel(bodyParam)) {
+    return;
+  }
   const clonedBody = realm.clone(bodyParam);
-  const body = realm.typeFactory.modelProperty("body", clonedBody, { optional: true });
-  op.parameters.properties.set("body", body);
+  const optional = !Array.from(clonedBody.properties.values()).some((p) => !p.optional);
+  const body = realm.typeFactory.modelProperty("body", clonedBody, { optional });
+  op.parameters.properties.set("bodyParameters", body);
 }
 
 /**
@@ -122,7 +128,7 @@ function setQueryParameters(op: Operation, realm: Realm, queryParams: ModelPrope
     realm.typeFactory.model("", clonedQueryParams),
     { optional }
   );
-  op.parameters.properties.set("query", query);
+  op.parameters.properties.set("queryParameters", query);
 }
 
 /**
