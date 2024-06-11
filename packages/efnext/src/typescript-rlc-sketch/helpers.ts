@@ -46,7 +46,11 @@ const toRestOperation: Mutator = {
         return;
       }
 
-      const bodyParam = httpOperation.parameters.body?.type;
+      let bodyParam: Model | undefined;
+      if (hasBodyParameter(httpOperation)) {
+        bodyParam = realm.clone(httpOperation.parameters.body!.type as Model);
+      }
+
       const queryParams = getHttpParameters(httpOperation, "query");
       const headerParams = getHttpParameters(httpOperation, "header");
 
@@ -71,6 +75,10 @@ const toRestOperation: Mutator = {
     },
   },
 };
+
+function hasBodyParameter(httpOperation: HttpOperation): boolean {
+  return Boolean(httpOperation.parameters.body?.type);
+}
 
 function hasRequiredProperties(model: Model): boolean {
   for (const prop of model.properties.values()) {
@@ -107,9 +115,10 @@ function setBodyParameter(op: Operation, realm: Realm, bodyParam: Type): void {
   if (!isModel(bodyParam)) {
     return;
   }
-  const clonedBody = realm.clone(bodyParam);
-  const optional = !Array.from(clonedBody.properties.values()).some((p) => !p.optional);
-  const body = realm.typeFactory.modelProperty("body", clonedBody, { optional });
+
+  const optional = !Array.from(bodyParam.properties.values()).some((p) => !p.optional);
+  const body = realm.typeFactory.modelProperty("body", bodyParam, { optional });
+
   op.parameters.properties.set("bodyParameters", body);
 }
 
