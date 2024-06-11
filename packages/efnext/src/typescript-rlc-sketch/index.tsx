@@ -6,7 +6,7 @@ import { SourceFile } from "../framework/components/source-file.js";
 import { emit } from "../framework/core/emit.js";
 import { InterfaceDeclaration } from "../typescript/interface-declaration.js";
 import { RestResource } from "./components/rest-resource.js";
-import { HelperContext, getStateHelpers } from "./helpers.js";
+import { HelperContext, getStateHelpers } from "./helpers/helpers.js";
 
 export async function $onEmit(context: EmitContext) {
   if (context.program.compilerOptions.noEmit) {
