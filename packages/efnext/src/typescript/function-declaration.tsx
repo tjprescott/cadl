@@ -37,6 +37,11 @@ export function FunctionDeclaration({
     (child: any) => child.type === FunctionDeclaration.Body
   );
 
+  // Filter out parametersChild and bodyChild from children
+  const filteredChildren = coerceArray(children)?.filter(
+    (child: any) => child !== parametersChild && child !== bodyChild
+  );
+
   const sReturnType = type?.returnType ? (
     <>
       :<TypeExpression type={type.returnType} />
@@ -51,7 +56,7 @@ export function FunctionDeclaration({
   let sBody = bodyChild ? (
     bodyChild
   ) : (
-    <FunctionDeclaration.Body>{children}</FunctionDeclaration.Body>
+    <FunctionDeclaration.Body>{filteredChildren}</FunctionDeclaration.Body>
   );
 
   return (
