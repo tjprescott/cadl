@@ -1,12 +1,12 @@
 import { EmitContext } from "@typespec/compiler";
-import { describe, it } from "vitest";
-import { render } from "../src/framework/core/render.js";
+import { format } from "prettier";
+import { assert, describe, it } from "vitest";
+import { renderToSourceFiles } from "../src/framework/core/render.js";
 import { emitRlc } from "../src/typescript-rlc-sketch/index.js";
-import { assertEqual } from "./component-utils.js";
 import { getProgram } from "./test-host.js";
 
 describe("e2e typescript rlc emitter", () => {
-  it("should render rlc structure", async () => {
+  it("should render rlc structure!", async () => {
     const program = await getProgram(
       `
           import "@typespec/http";
@@ -31,17 +31,22 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const files = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(files[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
       interface Client {
         (path: "/widgets"): {
-          get(options?: {}): string[];
+          get(options?: {}): DemoServiceWidgetsget200Response;
         };
-      }`
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("should render path parameters", async () => {
@@ -69,17 +74,22 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const result = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
-        (path: "/widgets/{id}", id: string): {
-          get(options?: {}): string[];
-        };
-      }`
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+       interface Client {
+         (path: "/widgets/{id}", id: string): {
+           get(options?: {}): DemoServiceWidgetsget200Response;
+         };
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("should render body parameters", async () => {
@@ -111,22 +121,23 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
 
-    await assertEqual(
-      result,
+    const result = await renderToSourceFiles(tree);
+
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+        interface Client {
         (path: "/widgets"): {
-          get(options: {body: {name: string}}): string[];
+          get(options: {body: {name: string}}): DemoServiceWidgetsget200Response;
         };
-      }
-
-     interface Widget {
-      name: string;
-     }  
-      `
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("should render body parameter as optional", async () => {
@@ -158,22 +169,22 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const result = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+       interface Client {
         (path: "/widgets"): {
-          get(options?: {body?: {name?: string}}): string[];
+          get(options?: {body?: {name?: string}}): DemoServiceWidgetsget200Response;
         };
-      }
-        
-     interface Widget {
-      name?: string;
-     }  
-      `
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("should render query parameters", async () => {
@@ -205,25 +216,25 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const result = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+       interface Client {
         (path: "/widgets"): {
           get(options: {
             body: {name: string}, 
             query: {requestId: string}
-          }): string[];
+          }): DemoServiceWidgetsget200Response;
         };
-      }
-
-     interface Widget {
-      name: string;
-     }  
-      `
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("should render header parameters", async () => {
@@ -255,25 +266,25 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const result = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+       interface Client {
         (path: "/widgets"): {
           get(options: {
             body: {name: string}, 
             headers?: {requestId?: string}
-          }): string[];
+          }): DemoServiceWidgetsget200Response;
         };
-      }
-
-     interface Widget {
-      name: string;
-     }  
-      `
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("options should be optional when no required parameters", async () => {
@@ -305,25 +316,25 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const result = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+       interface Client {
         (path: "/widgets"): {
           get(options?: {
             body?: {name?: string}, 
             headers?: {requestId?: string}
-          }): string[];
+          }): DemoServiceWidgetsget200Response;
         };
-      }
-
-     interface Widget {
-      name?: string;
-     }  
-      `
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 
   it("options should be required when there is at least one required parameter", async () => {
@@ -355,24 +366,24 @@ describe("e2e typescript rlc emitter", () => {
     } as EmitContext;
 
     const tree = emitRlc(emitContext);
-    const result = await render(tree);
+    const result = await renderToSourceFiles(tree);
 
-    await assertEqual(
-      result,
+    const formattedActual = await format(result[1].content, { parser: "typescript" });
+    const formattedExpected = await format(
       `
-      interface Client {
+      import { DemoServiceWidgetsget200Response } from "./models.js";
+
+        interface Client {
         (path: "/widgets"): {
           get(options: {
             body?: {name?: string}, 
             headers: {requestId: string}
-          }): string[];
+          }): DemoServiceWidgetsget200Response;
         };
-      }
-
-     interface Widget {
-      name?: string;
-     }  
-      `
+      }`,
+      { parser: "typescript" }
     );
+
+    assert.equal(formattedActual, formattedExpected);
   });
 });

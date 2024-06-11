@@ -1,6 +1,6 @@
 import { Operation, mutateSubgraph } from "@typespec/compiler";
-import { describe, it } from "vitest";
-import { restResponseMutator } from "../src/typescript-rlc-sketch/helpers/rest-response-mutator.js";
+import { assert, describe, it } from "vitest";
+import { restResponseMutator } from "../src/typescript-rlc-sketch/helpers/rest-operation-response-mutator.js";
 import { getProgram } from "./test-host.js";
 
 describe("e2e operation mutator", () => {
@@ -37,6 +37,6 @@ describe("e2e operation mutator", () => {
     const { type } = mutateSubgraph(program, [restResponseMutator], operation);
     const mutatedOperation = type as Operation;
 
-    console.log((mutatedOperation.returnType as any).name);
+    assert.equal((mutatedOperation.returnType as any).name, "DemoServiceAget200Response");
   });
 });

@@ -1,4 +1,4 @@
-import { Interface, ModelProperty, Mutator, MutatorFlow, Namespace } from "@typespec/compiler";
+import { Interface, ModelProperty, Mutator, Namespace } from "@typespec/compiler";
 import { getHttpOperation } from "@typespec/http";
 
 /**
@@ -8,11 +8,8 @@ import { getHttpOperation } from "@typespec/http";
  * @type {Mutator}
  */
 export const restResponseMutator: Mutator = {
-  name: "Optionals in options bag",
+  name: "rest-operation-response-mutator",
   Operation: {
-    filter() {
-      return MutatorFlow.DontRecurse;
-    },
     mutate(op, clone, program, realm) {
       const [httpOperation] = getHttpOperation(program, op);
 
@@ -26,6 +23,7 @@ export const restResponseMutator: Mutator = {
       for (const httpResponse of httpResponses) {
         const statusCode = httpResponse.statusCodes;
         if (typeof statusCode !== "number") {
+          // TODO?
           console.warn("Skipping not numeric status codes...", statusCode);
           continue;
         }
@@ -36,7 +34,8 @@ export const restResponseMutator: Mutator = {
           // Start by creating the new return type model.
           const containerName = getContainerFullName(httpOperation.container);
           //TODO: Add string to identify by contentType
-          const responseModelName = `${containerName}${statusCode}Response`;
+          //TODO: Add naming policy
+          const responseModelName = `${containerName}${httpOperation.verb}${statusCode}Response`;
 
           const responseProperties: ModelProperty[] = [];
 

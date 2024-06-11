@@ -1,4 +1,4 @@
-import { Model, Mutator, MutatorFlow } from "@typespec/compiler";
+import { Model, Mutator } from "@typespec/compiler";
 import { getHttpOperation } from "@typespec/http";
 import {
   getHttpParameters,
@@ -15,11 +15,8 @@ import {
  * @type {Mutator}
  */
 export const restOperationMutator: Mutator = {
-  name: "Optionals in options bag",
+  name: "rest-operation-mutator",
   Operation: {
-    filter() {
-      return MutatorFlow.DontRecurse;
-    },
     mutate(op, clone, program, realm) {
       const [httpOperation] = getHttpOperation(program, op);
 

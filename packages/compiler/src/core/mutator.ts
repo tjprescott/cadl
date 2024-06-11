@@ -173,7 +173,7 @@ export const Mutators = {
   JSONMergePatch,
 };
 
-type MutatableType = Exclude<
+export type MutatableType = Exclude<
   Type,
   | TemplateParameter
   | Namespace

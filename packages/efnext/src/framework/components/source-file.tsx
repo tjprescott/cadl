@@ -50,7 +50,7 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
       const records = imports.get(record.importPath)!;
 
       // todo: consider making this a set.
-      if (records.find(r => r.name === record.name)) {
+      if (records.find((r) => r.name === record.name)) {
         return;
       }
 
@@ -61,7 +61,8 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
     let importString = "";
     for (const [importPath, records] of imports) {
       if (filetype === "typescript") {
-        importString += `import {${records.map((r) => r.name).join(", ")}} from "${importPath.replace(/\.ts$/, ".js")}"\n`;
+        //TODO: hardcoded ./ need to handle local vs external imports
+        importString += `import {${records.map((r) => r.name).join(", ")}} from "./${importPath.replace(/\.ts$/, ".js")}"\n`;
       }
 
       if (filetype === "python") {
@@ -74,7 +75,8 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
 
   return (
     <SourceFileContext.Provider value={sourceFileState}>
-      <ImportContainer /><br />
+      <ImportContainer />
+      <br />
       <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>
     </SourceFileContext.Provider>
   );
