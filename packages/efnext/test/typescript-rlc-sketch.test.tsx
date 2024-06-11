@@ -6,384 +6,436 @@ import { emitRlc } from "../src/typescript-rlc-sketch/index.js";
 import { getProgram } from "./test-host.js";
 
 describe("e2e typescript rlc emitter", () => {
-  it("should render rlc structure!", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
+  describe("Rest Operations", () => {
+    it("should render rlc structure!", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
 
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
 
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
+      const tree = emitRlc(emitContext);
+      const files = await renderToSourceFiles(tree);
 
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const files = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(files[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-      interface Client {
-        (path: "/widgets"): {
-          get(options?: {}): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
-  });
-
-  it("should render path parameters", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
-
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
-
-          @route("/widgets/{id}")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(@path id: string): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
-
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-       interface Client {
-         (path: "/widgets/{id}", id: string): {
-           get(options?: {}): DemoServiceWidgetsget200Response;
-         };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
-  });
-
-  it("should render body parameters", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
-
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
-
-          model Widget {
-            name: string;
-          }
-
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(...Widget): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
-
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
+      const formattedActual = await format(files[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
         interface Client {
-        (path: "/widgets"): {
-          get(options: {body: {name: string}}): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
+          (path: "/widgets"): {
+            get(options?: {}): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
 
-    assert.equal(formattedActual, formattedExpected);
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("should render path parameters", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            @route("/widgets/{id}")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(@path id: string): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+         interface Client {
+           (path: "/widgets/{id}", id: string): {
+             get(options?: {}): DemoServiceWidgetsget200Response;
+           };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("should render body parameters", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+          interface Client {
+          (path: "/widgets"): {
+            get(options: {body: {name: string}}): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("should render body parameter as optional", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name?: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+         interface Client {
+          (path: "/widgets"): {
+            get(options?: {body?: {name?: string}}): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("should render query parameters", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget, @query requestId: string): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+         interface Client {
+          (path: "/widgets"): {
+            get(options: {
+              body: {name: string}, 
+              query: {requestId: string}
+            }): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("should render header parameters", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget, @header requestId?: string): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+         interface Client {
+          (path: "/widgets"): {
+            get(options: {
+              body: {name: string}, 
+              headers?: {requestId?: string}
+            }): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("options should be optional when no required parameters", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name?: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget, @header requestId?: string): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+         interface Client {
+          (path: "/widgets"): {
+            get(options?: {
+              body?: {name?: string}, 
+              headers?: {requestId?: string}
+            }): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
+
+    it("options should be required when there is at least one required parameter", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name?: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget, @header requestId: string): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
+
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
+
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
+
+      const formattedActual = await format(result[1].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        import { DemoServiceWidgetsget200Response } from "./models.js";
+  
+          interface Client {
+          (path: "/widgets"): {
+            get(options: {
+              body?: {name?: string}, 
+              headers: {requestId: string}
+            }): DemoServiceWidgetsget200Response;
+          };
+        }`,
+        { parser: "typescript" }
+      );
+
+      assert.equal(formattedActual, formattedExpected);
+    });
   });
 
-  it("should render body parameter as optional", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
+  describe("Models", () => {
+    it("should render the response model", async () => {
+      const program = await getProgram(
+        `
+            import "@typespec/http";
+  
+            using TypeSpec.Http;
+            @service({
+              title: "Widget Service",
+            })
+            namespace DemoService;
+  
+            model Widget {
+              name?: string;
+            }
+  
+            @route("/widgets")
+            @tag("Widgets")
+            interface Widgets {
+              @get list(...Widget, @header requestId: string): string[];
+            }
+          `,
+        { libraries: ["Http"] }
+      );
 
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
+      const emitContext: EmitContext = {
+        program,
+      } as EmitContext;
 
-          model Widget {
-            name?: string;
-          }
+      const tree = emitRlc(emitContext);
+      const result = await renderToSourceFiles(tree);
 
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(...Widget): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
+      const formattedActual = await format(result[0].content, { parser: "typescript" });
+      const formattedExpected = await format(
+        `
+        interface Widget {
+          name?: string;
+        }
+        interface DemoServiceWidgetsget200Response {
+            statusCode: "200";
+            body: string[];
+            headers: {};
+        }`,
+        { parser: "typescript" }
+      );
 
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-       interface Client {
-        (path: "/widgets"): {
-          get(options?: {body?: {name?: string}}): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
-  });
-
-  it("should render query parameters", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
-
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
-
-          model Widget {
-            name: string;
-          }
-
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(...Widget, @query requestId: string): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
-
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-       interface Client {
-        (path: "/widgets"): {
-          get(options: {
-            body: {name: string}, 
-            query: {requestId: string}
-          }): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
-  });
-
-  it("should render header parameters", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
-
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
-
-          model Widget {
-            name: string;
-          }
-
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(...Widget, @header requestId?: string): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
-
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-       interface Client {
-        (path: "/widgets"): {
-          get(options: {
-            body: {name: string}, 
-            headers?: {requestId?: string}
-          }): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
-  });
-
-  it("options should be optional when no required parameters", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
-
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
-
-          model Widget {
-            name?: string;
-          }
-
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(...Widget, @header requestId?: string): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
-
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-       interface Client {
-        (path: "/widgets"): {
-          get(options?: {
-            body?: {name?: string}, 
-            headers?: {requestId?: string}
-          }): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
-  });
-
-  it("options should be required when there is at least one required parameter", async () => {
-    const program = await getProgram(
-      `
-          import "@typespec/http";
-
-          using TypeSpec.Http;
-          @service({
-            title: "Widget Service",
-          })
-          namespace DemoService;
-
-          model Widget {
-            name?: string;
-          }
-
-          @route("/widgets")
-          @tag("Widgets")
-          interface Widgets {
-            @get list(...Widget, @header requestId: string): string[];
-          }
-        `,
-      { libraries: ["Http"] }
-    );
-
-    const emitContext: EmitContext = {
-      program,
-    } as EmitContext;
-
-    const tree = emitRlc(emitContext);
-    const result = await renderToSourceFiles(tree);
-
-    const formattedActual = await format(result[1].content, { parser: "typescript" });
-    const formattedExpected = await format(
-      `
-      import { DemoServiceWidgetsget200Response } from "./models.js";
-
-        interface Client {
-        (path: "/widgets"): {
-          get(options: {
-            body?: {name?: string}, 
-            headers: {requestId: string}
-          }): DemoServiceWidgetsget200Response;
-        };
-      }`,
-      { parser: "typescript" }
-    );
-
-    assert.equal(formattedActual, formattedExpected);
+      assert.equal(formattedActual, formattedExpected);
+    });
   });
 });

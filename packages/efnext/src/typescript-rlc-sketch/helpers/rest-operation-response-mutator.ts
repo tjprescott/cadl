@@ -39,6 +39,13 @@ export const restResponseMutator: Mutator = {
 
           const responseProperties: ModelProperty[] = [];
 
+          responseProperties.push(
+            realm.typeFactory.modelProperty(
+              "statusCode",
+              realm.typeFactory.stringLiteral(String(statusCode))
+            )
+          );
+
           if (httpResponseContent.body?.type) {
             responseProperties.push(
               realm.typeFactory.modelProperty("body", realm.clone(httpResponseContent.body?.type))
