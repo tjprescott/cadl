@@ -9,7 +9,7 @@ export interface UnionDeclarationProps {
 export function UnionDeclaration({ type }: UnionDeclarationProps) {
   return (
     <Declaration name={type.name!} refkey={type}>
-      type {type.name} = <UnionExpression type={type} />;
+      export type {type.name} = <UnionExpression type={type} />;
     </Declaration>
   );
 }

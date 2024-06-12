@@ -1,4 +1,5 @@
 import { ModelProperty, Operation } from "@typespec/compiler";
+import { useNamePolicy } from "../framework/core/name-policy.js";
 import { isModelProperty, isOperation } from "../framework/utils/typeguards.js";
 import { FunctionDeclaration } from "./function-declaration.js";
 import { TypeExpression } from "./type-expression.js";
@@ -8,10 +9,12 @@ export interface InterfaceMemberProps {
 }
 
 export function InterfaceMember({ type }: InterfaceMemberProps) {
+  const namer = useNamePolicy();
+  const name = namer.getName(type, "interfaceMember");
   if (isModelProperty(type)) {
     return (
       <>
-        "{type.name}"{type.optional && "?"}: <TypeExpression type={type.type} />;
+        "{name}"{type.optional && "?"}: <TypeExpression type={type.type} />;
       </>
     );
   }
@@ -19,7 +22,7 @@ export function InterfaceMember({ type }: InterfaceMemberProps) {
   if (isOperation(type)) {
     return (
       <>
-        {type.name}(<FunctionDeclaration.Parameters type={type.parameters} />
+        {name}(<FunctionDeclaration.Parameters type={type.parameters} />
         ): <TypeExpression type={type.returnType} />;
       </>
     );

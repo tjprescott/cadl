@@ -2,6 +2,7 @@ import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
 import { Model, ModelProperty, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { code } from "../framework/core/code.js";
+import { useNamePolicy } from "../framework/core/name-policy.js";
 import { Block } from "./block.js";
 import { TypeExpression } from "./type-expression.js";
 
@@ -28,7 +29,7 @@ export function FunctionDeclaration({
   refkey,
   children,
 }: FunctionDeclarationProps) {
-  const functionName = name ?? type!.name;
+  const functionName = name ?? useNamePolicy().getName(type!, "function");
 
   const parametersChild = coerceArray(children)?.find(
     (child: any) => child.type === FunctionDeclaration.Parameters
@@ -61,7 +62,7 @@ export function FunctionDeclaration({
 
   return (
     <Declaration name={functionName} refkey={refkey ?? type}>
-      function {functionName} ({sParams}) {sReturnType}
+      export function {functionName} ({sParams}) {sReturnType}
       <Block>{sBody}</Block>
     </Declaration>
   );

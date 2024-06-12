@@ -1,6 +1,5 @@
 import { ModelProperty, Mutator, MutatorFlow, Operation, mutateSubgraph } from "@typespec/compiler";
 import { getHttpOperation } from "@typespec/http";
-import { HttpTestLibrary } from "@typespec/http/testing";
 import { assert, describe, it } from "vitest";
 import { render } from "../src/framework/core/render.js";
 import { emitTypescriptInterfaces } from "../src/typescript-interface-emitter.js";
@@ -66,7 +65,7 @@ describe("e2e operation mutator", () => {
             foo(): void;
           }
         `,
-      { libraries: [HttpTestLibrary] }
+      { libraries: ["Http"] }
     );
 
     const result = await render(emitTypescriptInterfaces(program));

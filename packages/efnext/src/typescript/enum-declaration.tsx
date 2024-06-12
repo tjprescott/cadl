@@ -14,7 +14,7 @@ export function EnumDeclaration({ type, children }: EnumDeclarationProps) {
 
   return (
     <Declaration name={type.name!} refkey={type}>
-      enum {type.name}{" "}
+      export enum {type.name}{" "}
       <Block>
         {members.map((member) => (
           <EnumExpression type={member} />

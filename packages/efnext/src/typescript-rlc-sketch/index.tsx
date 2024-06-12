@@ -1,4 +1,4 @@
-import { EmitContext, Model, Operation } from "@typespec/compiler";
+import { EmitContext, Model, Namespace, Operation, Type, navigateType } from "@typespec/compiler";
 import { HttpOperation, getAllHttpServices } from "@typespec/http";
 import { EmitOutput } from "../framework/components/emit-output.js";
 import { SourceDirectory } from "../framework/components/source-directory.js";
@@ -6,6 +6,7 @@ import { SourceFile } from "../framework/components/source-file.js";
 import { emit } from "../framework/core/emit.js";
 import { isDeclaration } from "../framework/utils/typeguards.js";
 import { InterfaceDeclaration } from "../typescript/interface-declaration.js";
+import { typescriptNamePolicy } from "../typescript/naming-policy.js";
 import { RestResource } from "./components/rest-resource.js";
 import { HelperContext, StateHelpers, getStateHelpers } from "./helpers/helpers.js";
 
@@ -24,7 +25,7 @@ export function emitRlc(context: EmitContext) {
 
   const resources = Array.from(restResources.entries());
   return (
-    <EmitOutput>
+    <EmitOutput namePolicy={typescriptNamePolicy}>
       <HelperContext.Provider value={helpers}>
         <SourceDirectory path="src">
           <SourceFile path="models.ts" filetype="typescript">
@@ -57,14 +58,41 @@ function queryProgram({ program }: EmitContext, helpers: StateHelpers): RlcRecor
   }
 
   const service = services[0];
-  const returnTypes = new Set<Model>();
+  const modelsInventory = new Map<Namespace, Type[]>();
+
+  // find all models within the service namespace
+  // and organize them by the namespace they're in.
+  navigateType(
+    service.namespace,
+    {
+      model(m) {
+        if (m.namespace?.name === "TypeSpec") {
+          return;
+        }
+
+        if (!modelsInventory.get(m.namespace!)) {
+          modelsInventory.set(m.namespace!, []);
+        }
+
+        const ms = modelsInventory.get(m.namespace!)!;
+        ms.push(m);
+      },
+    },
+    {}
+  );
 
   const httpOperations = service.operations.map((httpOperation) => {
     const mutated = helpers.toRestOperation(httpOperation.operation);
     const operation = mutated.type as Operation;
 
-    if (isDeclaration(operation.returnType) && operation.returnType.kind === "Model") {
-      returnTypes.add(operation.returnType);
+    const returnType = operation.returnType;
+    if (isDeclaration(operation.returnType) && returnType.kind === "Model") {
+      if (!modelsInventory.get(returnType.namespace!)) {
+        modelsInventory.set(returnType.namespace!, []);
+      }
+
+      const ms = modelsInventory.get(returnType.namespace!)!;
+      ms.push(returnType);
     }
 
     return {
@@ -74,9 +102,7 @@ function queryProgram({ program }: EmitContext, helpers: StateHelpers): RlcRecor
   });
 
   const restResources = groupByPath(httpOperations);
-  const models = Array.from(service.namespace.models.values());
-  models.push(...returnTypes);
-
+  const models = [...modelsInventory.values()].flat() as Model[];
   return {
     restResources,
     models,

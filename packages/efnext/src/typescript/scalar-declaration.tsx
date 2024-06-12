@@ -9,7 +9,7 @@ export interface ScalarDeclarationProps {
 export function ScalarDeclaration({ type }: ScalarDeclarationProps) {
   return (
     <Declaration name={type.name!} refkey={type}>
-      type {type.name} = <TypeExpression type={type.baseScalar!} />;
+      export type {type.name} = <TypeExpression type={type.baseScalar!} />;
     </Declaration>
   );
 }
