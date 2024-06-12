@@ -5,4 +5,7 @@ export const stdlib = {
     Literal: ["typings", "Literal"],
     Tuple: ["typings", "Tuple"],
   },
+  enum: {
+    Enum: ["enum", "Enum"],
+  },
 } as const;

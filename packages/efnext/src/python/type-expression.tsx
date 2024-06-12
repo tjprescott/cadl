@@ -94,9 +94,9 @@ function getScalarIntrinsicExpression(type: Scalar | IntrinsicType): string {
     // This is a delcared scalar
     return <Reference refkey={type} />;
   }
-  const tsType = intrinsicNameToPythonType.get(type.name);
-  if (!tsType) {
+  const pythonType = intrinsicNameToPythonType.get(type.name);
+  if (!pythonType) {
     throw new Error(`Unknown scalar type ${type.name}`);
   }
-  return tsType;
+  return pythonType;
 }

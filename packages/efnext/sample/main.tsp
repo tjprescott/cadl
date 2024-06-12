@@ -5,9 +5,16 @@ namespace DemoService {
 
   @route("/people")
   namespace People {
+    enum PersonKind {
+      adult,
+      child,
+      adultChild
+    }
+
     model Person<T> {
       firstName: string | int32;
       lastName: string;
+      kind: PersonKind;
       special: T;
       pets: Pets.Pet[];
     }

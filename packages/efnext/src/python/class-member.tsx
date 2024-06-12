@@ -11,7 +11,6 @@ export function ClassMember({ type }: ClassMemberProps) {
   return (
     <>
       {name}: <TypeExpression type={type.type} />
-      <br />
     </>
   );
 }

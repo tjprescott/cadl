@@ -1,6 +1,6 @@
 import { EmitOutput, emit } from "#typespec/emitter/core";
 import { pythonNamePolicy } from "#typespec/emitter/python";
-import { EmitContext, Model, Namespace, Program, Type, navigateType } from "@typespec/compiler";
+import { EmitContext, Enum, Model, Namespace, Program, Type, Union, navigateType } from "@typespec/compiler";
 import { getAllHttpServices } from "@typespec/http";
 
 import { AppFolder, AppFolderRecord } from "./components/app-folder.js";
@@ -33,17 +33,21 @@ function queryApp({ program }: EmitContext) {
 
   // find all models within the service namespace
   // and organize them by the namespace they're in.
+  function emitType(type: Model | Enum | Union) {
+    if (!models.get(type.namespace!)) {
+      models.set(type.namespace!, []);
+    }
+
+    const ms = models.get(type.namespace!)!;
+    ms.push(type);
+  }
+
   navigateType(
     service.namespace,
     {
-      model(m) {
-        if (!models.get(m.namespace!)) {
-          models.set(m.namespace!, []);
-        }
-
-        const ms = models.get(m.namespace!)!;
-        ms.push(m);
-      },
+      model: emitType,
+      enum: emitType,
+      union: emitType
     },
     {}
   );

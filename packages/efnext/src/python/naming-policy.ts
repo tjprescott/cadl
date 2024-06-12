@@ -5,7 +5,7 @@ import { isDeclaration } from "../framework/utils/typeguards.js";
 
 // todo: provide in Python framework
 
-type NameKinds = "classMember" | "class" | "function" | "parameter";
+type NameKinds = "classMember" | "class" | "function" | "parameter" | "enumMember";
 
 export const pythonNamePolicy = createNamePolicy<NameKinds>((type, kind) => {
   if (!("name" in type && typeof type.name === "string")) {
@@ -62,6 +62,7 @@ export const pythonNamePolicy = createNamePolicy<NameKinds>((type, kind) => {
     case "classMember":
     case "function":
     case "parameter":
+    case "enumMember":
       return snakeCase(name);
     default:
       throw new Error(`Unknown kind ${kind}`);
