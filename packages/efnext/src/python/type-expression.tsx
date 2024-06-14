@@ -1,18 +1,22 @@
+import { ComponentChildren } from "#jsx/jsx-runtime";
 import { IntrinsicType, Model, Scalar, Type } from "@typespec/compiler";
+import { code } from "../framework/core/code.js";
 import { isArray, isDeclaration, isRecord } from "../framework/utils/typeguards.js";
 import { ArrayExpression } from "./array-expression.js";
-import { ClassExpression } from "./class-expression.js";
+import { stdlib } from "./builtins.js";
+import { ClassMember } from "./class-member.js";
 import { DictionaryExpression } from "./dictionary-expression.js";
 import { Reference } from "./reference.js";
 import { TypeLiteral } from "./type-literal.js";
 import { UnionExpression } from "./union-expression.js";
-import { stdlib } from "./builtins.js";
+import { mapWithSep } from "./utils.js";
 
 export interface TypeExpressionProps {
   type: Type;
+  children?: ComponentChildren;
 }
 
-export function TypeExpression({ type }: TypeExpressionProps) {
+export function TypeExpression({ type, children }: TypeExpressionProps) {
   if (isDeclaration(type) && !(type as Model).indexer) {
     // todo: probably need abstraction around deciding what's a declaration in the output
     // (it may not correspond to things which are declarations in TypeSpec?)
@@ -58,7 +62,18 @@ export function TypeExpression({ type }: TypeExpressionProps) {
         return <DictionaryExpression elementType={elementType} />;
       }
 
-      return <ClassExpression type={type} />;
+      const members = mapWithSep(
+        type.properties.values(),
+        (prop) => {
+          return <ClassMember type={prop} />;
+        },
+        "\n"
+      );
+
+      return code`
+      ${members}
+      ${children}
+      `;
 
     default:
       throw new Error(type.kind + " not supported in TypeExpression");
