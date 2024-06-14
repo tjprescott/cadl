@@ -1,7 +1,7 @@
 import { Operation, Type } from "@typespec/compiler";
-import { Scope, SourceDirectory, SourceFile } from "#typespec/emitter/core";
-import { TypeDeclaration } from "#typespec/emitter/python";
 
+import { Scope, SourceDirectory, SourceFile } from "@typespec/efnext/framework";
+import { TypeDeclaration } from "@typespec/efnext/python";
 import { ClientOperation } from "./client-operation.js";
 import { InitPy } from "./init-py.js";
 import { InternalClientOperation } from "./internal-client-operation.js";
@@ -24,9 +24,7 @@ type Declaration = Type & { name: string };
  * source files, etc.
  */
 export function AppFolder({ folder }: AppFolderProps) {
-  const models = folder.types.map((t) => (
-    [<TypeDeclaration type={t} />, '\n'] // rote conversion of typespec type to python type
-  ));
+  const models = folder.types.map((t) => [<TypeDeclaration type={t} />, "\n"]); // rote conversion of typespec type to python type
 
   const operations = folder.operations.map((o) => <ClientOperation operation={o} />);
 

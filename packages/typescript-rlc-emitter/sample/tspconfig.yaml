@@ -1,2 +1,2 @@
 emit:
-  - "@typespec/efnext"
+  - "@typespec/typescript-rlc-emitter"

@@ -1,6 +1,6 @@
+import { render } from "@typespec/efnext/framework";
 import { describe, it } from "vitest";
-import { render } from "../src/framework/core/render.js";
-import { emitTypescriptInterfaces } from "../src/typescript-interface-emitter.js";
+import { emitTypescriptInterfaces } from "../src/index.js";
 import { assertEqual } from "./component-utils.js";
 import { getProgram } from "./test-host.js";
 

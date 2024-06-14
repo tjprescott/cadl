@@ -1,4 +1,5 @@
-import { code, useNamePolicy } from "#typespec/emitter/core"
+import { code } from "@typespec/compiler/emitter-framework";
+import { useNamePolicy } from "@typespec/efnext/framework";
 import { AppFolderRecord } from "./app-folder.js";
 
 export interface InitPyProps {

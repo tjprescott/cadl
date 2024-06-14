@@ -1,8 +1,16 @@
-import { EmitOutput, emit } from "#typespec/emitter/core";
-import { pythonNamePolicy } from "#typespec/emitter/python";
-import { EmitContext, Enum, Model, Namespace, Program, Type, Union, navigateType } from "@typespec/compiler";
+import {
+  EmitContext,
+  Enum,
+  Model,
+  Namespace,
+  Program,
+  Type,
+  Union,
+  navigateType,
+} from "@typespec/compiler";
+import { EmitOutput, emit } from "@typespec/efnext/framework";
+import { pythonNamePolicy } from "@typespec/efnext/python";
 import { getAllHttpServices } from "@typespec/http";
-
 import { AppFolder, AppFolderRecord } from "./components/app-folder.js";
 
 export async function $onEmit(context: EmitContext) {
@@ -47,7 +55,7 @@ function queryApp({ program }: EmitContext) {
     {
       model: emitType,
       enum: emitType,
-      union: emitType
+      union: emitType,
     },
     {}
   );
@@ -75,5 +83,5 @@ function getFolderForNamespace(
 }
 
 function findTypesInNamespace(root: Namespace, models: Map<Namespace, Type[]>) {
-  return models.get(root) as Model[]?? [];
+  return (models.get(root) as Model[]) ?? [];
 }

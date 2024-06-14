@@ -1,6 +1,6 @@
 import { Operation } from "@typespec/compiler";
-import { getRefkey } from "#typespec/emitter/core";
-import { Function, Reference } from "#typespec/emitter/python";
+import { getRefkey } from "@typespec/efnext/framework";
+import { Function, Reference } from "@typespec/efnext/python";
 
 interface ClientOperationProps {
   operation: Operation;
