@@ -10,7 +10,7 @@ export interface DeclarationProps {
   refkey?: unknown;
   children?: ComponentChildren;
 }
-export function Declaration({ name, children, refkey}: DeclarationProps) {
+export function Declaration({ name, children, refkey }: DeclarationProps) {
   if (refkey === undefined) {
     // todo: use FQN
     refkey = name;
@@ -20,13 +20,11 @@ export function Declaration({ name, children, refkey}: DeclarationProps) {
     throw new Error("Cannot nest declarations");
   }
 
-  const binder = useContext(BinderContext)
+  const binder = useContext(BinderContext);
   if (!binder) {
     throw new Error("Need binder context to create declarations");
   }
   const scope = useContext(ScopeContext);
   const declaration = binder.createDeclaration(name, scope, refkey);
-  return <DeclarationContext.Provider value={declaration}>
-    {children}
-  </DeclarationContext.Provider>
+  return <DeclarationContext.Provider value={declaration}>{children}</DeclarationContext.Provider>;
 }
