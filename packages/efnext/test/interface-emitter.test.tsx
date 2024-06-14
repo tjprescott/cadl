@@ -18,7 +18,7 @@ describe("e2e typescript interface emitter", () => {
 
     await assertEqual(
       result,
-      `interface A {
+      `export interface A {
           x: { y: string }
         }`
     );
@@ -36,7 +36,7 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `interface A {
+      `export interface A {
         x: true,
         y: "hi",
         z: 12
@@ -56,7 +56,7 @@ describe("e2e typescript interface emitter", () => {
 
     await assertEqual(
       result,
-      `interface A {
+      `export interface A {
         x: unknown
     }`
     );
@@ -74,7 +74,7 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `interface HasArray {
+      `export interface HasArray {
       x: string[];
       y: string[];
       z: (string | number)[];
@@ -93,10 +93,10 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `interface SomeModel {
+      `export interface SomeModel {
         x: string
       }
-      function read(x: string, y: number, z: { inline: true }, q?: SomeModel): string{}`
+      export function read(x: string, y: number, z: { inline: true }, q?: SomeModel): string{}`
     );
   });
 
@@ -123,16 +123,16 @@ describe("e2e typescript interface emitter", () => {
 
     await assertEqual(
       result,
-      `interface Foo {
+      `export interface Foo {
         prop: string
       }
-      function Callback(x: string): string{}
-      interface Things {
+      export function Callback(x: string): string{}
+      export interface Things {
         read(x: string): string
         write(y: Foo): Foo
         callCb(cb: Callback): string
       }
-      interface Template {
+      export interface Template {
         read(): string
         write():  string
       }`
@@ -156,11 +156,11 @@ describe("e2e typescript interface emitter", () => {
 
     await assertEqual(
       result,
-      `enum StringEnum {
+      `export enum StringEnum {
         x,
         y = "hello"
       }
-      enum NumberEnum {
+      export enum NumberEnum {
         x = 1,
         y = 2,
         z = 3
@@ -188,11 +188,11 @@ describe("e2e typescript interface emitter", () => {
 
     await assertEqual(
       result,
-      `interface SomeModel {
+      `export interface SomeModel {
         a: 1 | 2 | SomeModel;
         b: string;
       }
-      type U = 1 | "hello" | SomeModel`
+      export type U = 1 | "hello" | SomeModel`
     );
   });
 
@@ -206,7 +206,7 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `interface Foo {
+      `export interface Foo {
         x: [string, number]
       }`
     );
@@ -228,11 +228,11 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `interface EnumReference {
+      `export interface EnumReference {
         prop: MyEnum.a;
         prop2: MyEnum.b;
       }
-      enum MyEnum {
+      export enum MyEnum {
         a = "hi",
         b = "bye"
       }`
@@ -251,8 +251,8 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(contents));
     await assertEqual(
       result,
-      `type X = string;
-      type Y = number;`
+      `export type X = string;
+      export type Y = number;`
     );
   });
 
@@ -274,10 +274,10 @@ describe("e2e typescript interface emitter", () => {
     const result = await render(emitTypescriptInterfaces(program));
     await assertEqual(
       result,
-      `interface Foo {
+      `export interface Foo {
         bar: Bar
       }
-      interface Bar {
+      export interface Bar {
         x: Foo;
         y: { x: Foo }
       }`

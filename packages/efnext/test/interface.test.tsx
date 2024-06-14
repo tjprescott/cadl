@@ -34,7 +34,7 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface Widget {
+          `export interface Widget {
           id: string;
           weight: number;
           color: "blue" | "red";
@@ -66,7 +66,7 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface MyOperations {
+          `export interface MyOperations {
           id: string;
           weight: number;
           color: "blue" | "red";
@@ -101,7 +101,7 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface MyOperations {
+          `export interface MyOperations {
           id: string;
           weight: number;
           color: "blue" | "red";
@@ -135,7 +135,7 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface MyModel {
+          `export interface MyModel {
             id: string;
             weight: number;
             color: "blue" | "red";
@@ -174,12 +174,12 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface Widget {
+          `export interface Widget {
             id: string;
             weight: number;
             color: "blue" | "red";
           }
-          interface ErrorWidget extends Widget {
+          export interface ErrorWidget extends Widget {
             code: number;
             message: string;
           }`
@@ -210,7 +210,7 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface WidgetOperations {
+          `export interface WidgetOperations {
           getName(id: string): string;
         }`
         );
@@ -245,11 +245,11 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface WidgetOperations {
+          `export interface WidgetOperations {
           getName(foo: Foo): string;
           getOtherName(name: string): string
         }
-        interface Foo {
+        export interface Foo {
           name: string;
         }  
         `
@@ -288,10 +288,10 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface WidgetOperations {
+          `export interface WidgetOperations {
           getName(id: string): Widget;
         }
-        interface Widget {
+        export interface Widget {
           id: string;
           weight: number;
           color: "blue" | "red";
@@ -335,11 +335,11 @@ describe("Typescript Interface", () => {
 
         await assertEqual(
           res,
-          `interface WidgetOperationsExtended {
+          `export interface WidgetOperationsExtended {
           getName(id: string): Widget;
           delete(id: string): void;
         }
-        interface Widget {
+        export interface Widget {
           id: string;
           weight: number;
           color: "blue" | "red";

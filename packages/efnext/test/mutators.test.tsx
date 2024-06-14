@@ -72,7 +72,7 @@ describe("e2e operation mutator", () => {
 
     await assertEqual(
       result,
-      `interface A {
+      `export interface A {
           foo(): void
         }`
     );

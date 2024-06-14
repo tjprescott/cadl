@@ -28,7 +28,7 @@ describe("Typescript Function Declaration", () => {
           </EmitOutput>
         );
 
-        await assertEqual(res, `function getName(id: string): string{}`);
+        await assertEqual(res, `export function getName(id: string): string{}`);
       });
 
       it("can override name", async () => {
@@ -48,7 +48,7 @@ describe("Typescript Function Declaration", () => {
           </EmitOutput>
         );
 
-        await assertEqual(res, `function newName(id: string): string{}`);
+        await assertEqual(res, `export function newName(id: string): string{}`);
       });
 
       it("can override parameters with raw params provided", async () => {
@@ -71,7 +71,7 @@ describe("Typescript Function Declaration", () => {
           </EmitOutput>
         );
 
-        await assertEqual(res, `function createPerson(name: string, age: number): string{}`);
+        await assertEqual(res, `export function createPerson(name: string, age: number): string{}`);
       });
 
       it("can override parameters with an array of ModelProperties", async () => {
@@ -99,7 +99,7 @@ describe("Typescript Function Declaration", () => {
           </EmitOutput>
         );
 
-        await assertEqual(res, `function createPerson(name: string, age: number): string{}`);
+        await assertEqual(res, `export function createPerson(name: string, age: number): string{}`);
       });
 
       it("can ender function body", async () => {
@@ -126,7 +126,7 @@ describe("Typescript Function Declaration", () => {
 
         await assertEqual(
           res,
-          `function createPerson(id: string): string {
+          `export function createPerson(id: string): string {
                const message = "Hello World!";
                console.log(message);
            }`
