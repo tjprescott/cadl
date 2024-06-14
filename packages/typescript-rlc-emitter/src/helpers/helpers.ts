@@ -1,5 +1,5 @@
 import { EmitContext, MutatableType, Operation, Realm, mutateSubgraph } from "@typespec/compiler";
-import { createContext, useContext } from "../../framework/core/context.js";
+import { createContext, useContext } from "@typespec/efnext/framework";
 import { restOperationMutator } from "./rest-operation-mutator.js";
 import { restResponseMutator } from "./rest-operation-response-mutator.js";
 

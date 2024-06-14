@@ -1,8 +1,7 @@
-import { ComponentChildren } from "#jsx/jsx-runtime";
+import { code } from "@typespec/efnext/framework";
+import { ComponentChildren } from "@typespec/efnext/jsx-runtime";
+import { FunctionDeclaration, InterfaceMember } from "@typespec/efnext/typescript";
 import { HttpOperation } from "@typespec/http";
-import { code } from "../../framework/core/code.js";
-import { FunctionDeclaration } from "../../typescript/function-declaration.js";
-import { InterfaceMember } from "../../typescript/interface-member.js";
 import { getHttpParameters } from "../helpers/http-utils.js";
 
 export interface RestResourceProps {

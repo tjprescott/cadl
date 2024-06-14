@@ -1,8 +1,8 @@
 import { EmitContext } from "@typespec/compiler";
+import { renderToSourceFiles } from "@typespec/efnext/framework";
 import { format } from "prettier";
 import { assert, describe, it } from "vitest";
-import { renderToSourceFiles } from "../src/framework/core/render.js";
-import { emitRlc } from "../src/typescript-rlc-sketch/index.js";
+import { emitRlc } from "../src/index.js";
 import { getProgram } from "./test-host.js";
 
 describe("e2e typescript rlc emitter", () => {
@@ -39,7 +39,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-        interface Client {
+        export interface Client {
           (path: "/widgets"): {
             get(options?: {}): DemoServiceWidgetsget200Response;
           };
@@ -82,7 +82,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-         interface Client {
+         export interface Client {
            (path: "/widgets/{id}", id: string): {
              get(options?: {}): DemoServiceWidgetsget200Response;
            };
@@ -130,7 +130,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-          interface Client {
+          export interface Client {
           (path: "/widgets"): {
             get(options: {body: {name: string}}): DemoServiceWidgetsget200Response;
           };
@@ -177,7 +177,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-         interface Client {
+         export interface Client {
           (path: "/widgets"): {
             get(options?: {body?: {name?: string}}): DemoServiceWidgetsget200Response;
           };
@@ -224,7 +224,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-         interface Client {
+         export interface Client {
           (path: "/widgets"): {
             get(options: {
               body: {name: string}, 
@@ -274,7 +274,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-         interface Client {
+         export interface Client {
           (path: "/widgets"): {
             get(options: {
               body: {name: string}, 
@@ -324,7 +324,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-         interface Client {
+         export interface Client {
           (path: "/widgets"): {
             get(options?: {
               body?: {name?: string}, 
@@ -374,7 +374,7 @@ describe("e2e typescript rlc emitter", () => {
         `
         import { DemoServiceWidgetsget200Response } from "./models.js";
   
-          interface Client {
+          export interface Client {
           (path: "/widgets"): {
             get(options: {
               body?: {name?: string}, 
@@ -424,10 +424,10 @@ describe("e2e typescript rlc emitter", () => {
       const formattedActual = await format(result[0].content, { parser: "typescript" });
       const formattedExpected = await format(
         `
-        interface Widget {
+        export interface Widget {
           name?: string;
         }
-        interface DemoServiceWidgetsget200Response {
+        export interface DemoServiceWidgetsget200Response {
             statusCode: "200";
             body: string[];
             headers: {};

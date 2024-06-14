@@ -6,6 +6,7 @@ export * from "./function-declaration.js";
 export * from "./interface-declaration.js";
 export * from "./interface-expression.js";
 export * from "./interface-member.js";
+export * from "./naming-policy.js";
 export * from "./record-expression.js";
 export * from "./reference.js";
 export * from "./scalar-declaration.js";

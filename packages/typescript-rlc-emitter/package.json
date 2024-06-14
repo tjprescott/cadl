@@ -1,5 +1,5 @@
 {
-  "name": "@typespec/efnext",
+  "name": "@typespec/typescript-rlc-emitter",
   "version": "0.56.0",
   "author": "Microsoft Corporation",
   "description": "emitter framework prototype",
@@ -14,58 +14,19 @@
     "url": "https://github.com/microsoft/typespec/issues"
   },
   "keywords": [
-    "TypeSpec",
-    "json schema"
+    "TypeSpec"
   ],
   "type": "module",
-  "main": "dist/src/index.js",
+  "main": "dist/src/python-sketch/index.js",
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
-    },
-    "./testing": {
-      "types": "./dist/src/testing/index.d.ts",
-      "default": "./dist/src/testing/index.js"
-    },
-    "./framework": {
-      "types": "./dist/src/framework/index.d.ts",
-      "default": "./dist/src/framework/index.js"
-    },
-    "./python": {
-      "types": "./dist/src/python/index.d.ts",
-      "default": "./dist/src/python/index.js"
-    },
-    "./typescript": {
-      "types": "./dist/src/typescript/index.d.ts",
-      "default": "./dist/src/typescript/index.js"
-    },
-    "./jsx-runtime": {
-      "types": "./dist/src/framework/core/jsx.d.ts",
-      "default": "./dist/src/framework/core/jsx.js"
-    },
-    "./jsx-dev-runtime": {
-      "types": "./dist/src/framework/core/jsx.d.ts",
-      "default": "./dist/src/framework/core/jsx.js"
     }
   },
   "tspMain": "lib/main.tsp",
   "engines": {
     "node": ">=18.0.0"
-  },
-  "imports": {
-    "#jsx/jsx-runtime": {
-      "default": "./dist/src/framework/core/jsx.js"
-    },
-    "#jsx/jsx-dev-runtime": {
-      "default": "./dist/src/framework/core/jsx.js"
-    },
-    "#typespec/emitter/python": {
-      "default": "./dist/src/python/index.js"
-    },
-    "#typespec/emitter/core": {
-      "default": "./dist/src/framework/index.js"
-    }
   },
   "scripts": {
     "clean": "rimraf ./dist ./temp",
@@ -105,6 +66,7 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
+    "@typespec/efnext": "workspace:~",
     "change-case": "~5.4.4",
     "prettier": "~3.2.5",
     "yaml": "~2.4.2"

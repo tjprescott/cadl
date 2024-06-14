@@ -1,6 +1,6 @@
 import { ModelProperty, Operation, Realm, Type } from "@typespec/compiler";
+import { isModel } from "@typespec/efnext/framework";
 import { HttpOperation } from "@typespec/http";
-import { isModel } from "../../framework/utils/typeguards.js";
 
 export function hasBodyParameter(httpOperation: HttpOperation): boolean {
   return Boolean(httpOperation.parameters.body?.type);

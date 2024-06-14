@@ -1,12 +1,13 @@
 import { EmitContext, Model, Namespace, Operation, Type, navigateType } from "@typespec/compiler";
+import {
+  EmitOutput,
+  SourceDirectory,
+  SourceFile,
+  emit,
+  isDeclaration,
+} from "@typespec/efnext/framework";
+import { InterfaceDeclaration, typescriptNamePolicy } from "@typespec/efnext/typescript";
 import { HttpOperation, getAllHttpServices } from "@typespec/http";
-import { EmitOutput } from "../framework/components/emit-output.js";
-import { SourceDirectory } from "../framework/components/source-directory.js";
-import { SourceFile } from "../framework/components/source-file.js";
-import { emit } from "../framework/core/emit.js";
-import { isDeclaration } from "../framework/utils/typeguards.js";
-import { InterfaceDeclaration } from "../typescript/interface-declaration.js";
-import { typescriptNamePolicy } from "../typescript/naming-policy.js";
 import { RestResource } from "./components/rest-resource.js";
 import { HelperContext, StateHelpers, getStateHelpers } from "./helpers/helpers.js";
 

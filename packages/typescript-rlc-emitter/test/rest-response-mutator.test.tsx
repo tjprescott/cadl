@@ -1,6 +1,6 @@
 import { Operation, mutateSubgraph } from "@typespec/compiler";
 import { assert, describe, it } from "vitest";
-import { restResponseMutator } from "../src/typescript-rlc-sketch/helpers/rest-operation-response-mutator.js";
+import { restResponseMutator } from "../src/helpers/rest-operation-response-mutator.js";
 import { getProgram } from "./test-host.js";
 
 describe("e2e operation mutator", () => {
