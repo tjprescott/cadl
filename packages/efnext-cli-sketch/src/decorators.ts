@@ -10,8 +10,8 @@ function stateFns<T = any>(key: symbol) {
     get(context: { program: Program }, type: Type) {
       return context.program.stateMap(key).get(type) as T;
     },
-    set(context: { program: Program }, type: Type, value: T) {
-      context.program.stateMap(key).set(type, value);
+    set(context: { program: Program }, type: Type, value?: T) {
+      context.program.stateMap(key).set(type, value ?? true);
     },
     add(context: { program: Program }, type: Type) {
       context.program.stateMap(key).set(type, true);

@@ -16,7 +16,7 @@
     "generated-defs/**/*.ts",
     "test/**/*.ts",
     "test/**/*.tsx",
-    "src/index.tsx",
+    "src/emitter.tsx",
     "test/hello.test.tsx"
   ]
 }
