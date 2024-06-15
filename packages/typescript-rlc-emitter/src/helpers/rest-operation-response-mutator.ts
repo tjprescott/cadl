@@ -1,5 +1,13 @@
-import { Interface, ModelProperty, Mutator, Namespace } from "@typespec/compiler";
-import { getHttpOperation } from "@typespec/http";
+import { Interface, Model, ModelProperty, Mutator, Namespace, Realm } from "@typespec/compiler";
+import {
+  HttpOperationBody,
+  HttpOperationMultipartBody,
+  HttpStatusCodeRange,
+  getHttpOperation,
+} from "@typespec/http";
+import { pascalCase } from "change-case";
+import { NotImplementedError, UnreachableCodeError } from "./error.js";
+import { hasRequiredProperties } from "./model-helpers.js";
 
 /**
  * Mutator object to transform an operation result to REST API response.
@@ -11,70 +19,174 @@ export const restResponseMutator: Mutator = {
   name: "rest-operation-response-mutator",
   Operation: {
     mutate(op, clone, program, realm) {
+      // This mutator needs to do the following:
+      // For each return type it needs to create a new model that represents the response.
+      // There operation may result in one or more status codes
+      // Each status code may have different response bodies based on content-type
+
+      // We need to figure out which responses need to be created
       const [httpOperation] = getHttpOperation(program, op);
 
-      if (!httpOperation) {
-        return;
-      }
-
-      // Each operation may have multiple responses with different status codes, and for each status code, there may be different response bodies based on content-type.
-      const httpResponses = httpOperation.responses;
-
-      for (const httpResponse of httpResponses) {
-        const statusCode = httpResponse.statusCodes;
-        if (typeof statusCode !== "number") {
-          // TODO?
-          console.warn("Skipping not numeric status codes...", statusCode);
-          continue;
-        }
-
-        for (const httpResponseContent of httpResponse.responses) {
-          // Here we are at a unique combination of status code and content type.
+      const responseModels: Model[] = [];
+      for (const httpResponse of httpOperation.responses) {
+        // Here we have responses for a specific status code
+        for (const response of httpResponse.responses) {
+          // Here we have a response for a specific content type
           // We can now create a model based on the response body.
           // Start by creating the new return type model.
-          const containerName = getContainerFullName(httpOperation.container);
-          //TODO: Add string to identify by contentType
-          //TODO: Add naming policy
-          const responseModelName = `${containerName}${httpOperation.verb}${statusCode}Response`;
 
+          // Note: Typespec makes content-type case insensitive
+          const contentTypes = response.body?.contentTypes;
+
+          if (!contentTypes || contentTypes.length === 0) {
+            throw new NotImplementedError(
+              "Handling responses without content-types is not implemented yet."
+            );
+          }
+
+          // Here we know that the current response body shape corresponds to the contentTypes we extracted above
+          // This means we need to create a single model where the content-type is a union of all the content types
+
+          // Lets create the new model properties
           const responseProperties: ModelProperty[] = [];
 
-          responseProperties.push(
-            realm.typeFactory.modelProperty(
-              "statusCode",
-              realm.typeFactory.stringLiteral(String(statusCode))
-            )
-          );
+          const statusCodeProperty = getRlcStatusCodeProperty(realm, httpResponse.statusCodes);
+          responseProperties.push(statusCodeProperty);
 
-          if (httpResponseContent.body?.type) {
-            responseProperties.push(
-              realm.typeFactory.modelProperty("body", realm.clone(httpResponseContent.body?.type))
+          if (response.headers) {
+            const headersProperty = getRlcResponseHeaderProperty(
+              realm,
+              response.headers,
+              contentTypes
             );
+            responseProperties.push(headersProperty);
           }
 
-          const httpHeaders = httpResponseContent.headers;
-          if (httpHeaders) {
-            const responseHeaders: ModelProperty[] = [];
-            for (const key in httpHeaders) {
-              const header = httpHeaders[key];
-              responseHeaders.push(realm.typeFactory.modelProperty(key, realm.clone(header)));
-            }
-
-            responseProperties.push(
-              realm.typeFactory.modelProperty(
-                "headers",
-                realm.typeFactory.model("", responseHeaders)
-              )
-            );
+          if (response.body) {
+            const bodyProperty = getRlcResponseBodyProperty(realm, response.body);
+            responseProperties.push(bodyProperty);
           }
 
-          const response = realm.typeFactory.model(responseModelName, responseProperties);
-          clone.returnType = response;
+          // Get the name for our new model
+          const containerName = getContainerFullName(httpOperation.container);
+          const operationName = pascalCase(httpOperation.operation.name);
+          const statusCodePart = getRlcStatusCodeName(httpResponse.statusCodes);
+          const contentTypePart = contentTypes
+            .filter((c) => c !== "application/json")
+            .map((contentType) => pascalCase(contentType))
+            .join("");
+
+          const responseModelName = `${containerName}${operationName}${statusCodePart}${contentTypePart}Response`;
+          const responseModel = realm.typeFactory.model(responseModelName, responseProperties);
+          realm.addType(responseModel);
+          responseModels.push(responseModel);
         }
+      }
+
+      if (responseModels.length === 0) {
+        throw new NotImplementedError("Handling operation with no responses");
+      }
+
+      realm.remove(clone.returnType);
+
+      if (responseModels.length === 1) {
+        clone.returnType = responseModels[0];
+      } else {
+        clone.returnType = realm.typeFactory.union(responseModels);
       }
     },
   },
 };
+
+function getRlcStatusCodeName(statusCodes: number | HttpStatusCodeRange | "*") {
+  if (typeof statusCodes === "number") {
+    return String(statusCodes);
+  }
+
+  if (statusCodes === "*") {
+    return "Default";
+  }
+
+  throw new NotImplementedError("Handling StatusCodeRange is not implemented yet.");
+}
+
+function getRlcResponseBodyProperty(
+  realm: Realm,
+  body: HttpOperationBody | HttpOperationMultipartBody
+): ModelProperty {
+  if (body.bodyKind === "single") {
+    const isOptionalBody =
+      body.type.kind === "Model" ? !hasRequiredProperties(body.type) : undefined;
+
+    //TODO: should we clone the body type before adding it to the model?
+    const name = (body.type as any)?.name;
+    console.log(name ? name : `No name ${body.type.kind}`);
+    const bodyProperty = realm.typeFactory.modelProperty("body", realm.clone(body.type), {
+      optional: isOptionalBody,
+    });
+
+    realm.addType(bodyProperty);
+    return bodyProperty;
+  }
+
+  if (body.bodyKind === "multipart") {
+    throw new NotImplementedError("Multipart form data is not yet supported.");
+  }
+
+  throw new UnreachableCodeError(`Unsupported body kind: ${(body as any).bodyKind}`);
+}
+
+function getRlcResponseHeaderProperty(
+  realm: Realm,
+  headers: Record<string, ModelProperty>,
+  contentTypes: string[]
+): ModelProperty {
+  const responseHeaders: ModelProperty[] = [];
+  for (const key in headers) {
+    const header = realm.clone(headers[key]);
+
+    // If there is more than one content type we need to create a union type for the header
+    if (contentTypes.length > 0) {
+      const headerType = realm.typeFactory.union(
+        contentTypes.map((contentType) => realm.typeFactory.stringLiteral(contentType))
+      );
+
+      header.type = headerType;
+    }
+
+    responseHeaders.push(realm.typeFactory.modelProperty(key, header));
+  }
+
+  const prop = realm.typeFactory.modelProperty(
+    "headers",
+    realm.typeFactory.model("", responseHeaders)
+  );
+
+  realm.addType(prop);
+  return prop;
+}
+
+function getRlcStatusCodeProperty(
+  realm: Realm,
+  statusCodes: number | HttpStatusCodeRange | "*"
+): ModelProperty {
+  if (typeof statusCodes === "number") {
+    const prop = realm.typeFactory.modelProperty(
+      "status",
+      realm.typeFactory.stringLiteral(String(statusCodes))
+    );
+    realm.addType(prop);
+    return prop;
+  }
+
+  if (statusCodes === "*") {
+    const prop = realm.typeFactory.modelProperty("status", realm.typeFactory.scalar("string"));
+    realm.addType(prop);
+    return prop;
+  }
+
+  throw new NotImplementedError("Handling StatusCodeRange is not implemented yet.");
+}
 
 function getContainerFullName(container: Interface | Namespace | undefined): string {
   if (!container) {
