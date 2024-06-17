@@ -1,5 +1,5 @@
 import { SourceDirectory, SourceFile } from "../framework/components/index.js";
-import { PythonPackage, PythonPackageProps } from "./python-package.js";
+import { PythonPackage, PythonPackageModel } from "./python-package.js";
 
 /**
  * A Python project is a collection of Python packages and packaging metadata.
@@ -16,20 +16,20 @@ import { PythonPackage, PythonPackageProps } from "./python-package.js";
  *         |-- __init__.py
  *         |-- {module_name}.py
  */
-export interface PythonProjectProps {
+export interface PythonProjectModel {
   name: string;
   path: string;
   version: string;
-  packages: PythonPackageProps[];
+  packages: PythonPackageModel[];
 }
-export function PythonProject({ name, path, version, packages }: PythonProjectProps) {
+export function PythonProject({ name, path, version, packages }: PythonProjectModel) {
   const packageComponents = packages.map((pkg) => <PythonPackage {...pkg} />);
   // TODO: Make components for each of these key files? Also, add necessary file types.
   return (
     <SourceDirectory path={path}>
-      <SourceFile path="pyproject.toml" filetype="python" />
-      <SourceFile path="LICENSE" filetype="python" />
-      <SourceFile path="README.md" filetype="python" />
+      <SourceFile path="pyproject.toml" filetype="toml" />
+      <SourceFile path="LICENSE" filetype="plain-text" />
+      <SourceFile path="README.md" filetype="markdown" />
       <SourceFile path="setup.py" filetype="python" />
       <SourceDirectory path="{path}/src">{packageComponents}</SourceDirectory>
     </SourceDirectory>

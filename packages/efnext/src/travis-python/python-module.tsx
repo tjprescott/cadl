@@ -7,11 +7,11 @@ type Declaration = Type & { name: string };
  * A Python Module is basically a SourceFile which contains declarations. It will
  * basically contain the declarations that belong in the given TypeSpec namespace.
  */
-export interface PythonModuleProps {
+export interface PythonModuleModel {
   name: string;
   declarations: Declaration[];
 }
-export function PythonModule({ name, declarations }: PythonModuleProps) {
+export function PythonModule({ name, declarations }: PythonModuleModel) {
   return (
     <SourceFile path="models.py" filetype="python">
       {declarations}

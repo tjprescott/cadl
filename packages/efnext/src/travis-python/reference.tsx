@@ -2,7 +2,7 @@ import { ScopeContext } from "../framework/components/scope.js";
 import { SourceFileContext } from "../framework/components/source-file.js";
 import { useContext } from "../framework/core/context.js";
 
-export interface ReferenceProps {
+export interface ReferenceModel {
   refkey?: unknown;
   // COMMENT: The format here is confusing. Maybe a named tuple or object?
   builtin?: readonly [string, string] | [string, string];
@@ -11,7 +11,7 @@ export interface ReferenceProps {
 // COMMENT: It would be great if the framework could provide this if there are only a
 // few patterns that languages follow. But maybe this is just "the one tricky bit" that
 // a language library author needs to provide and we can simply provide good examples.
-export async function Reference({ refkey, builtin }: ReferenceProps) {
+export async function Reference({ refkey, builtin }: ReferenceModel) {
   // COMMENT: This line seems a little like magic.
   const sourceFile = useContext(SourceFileContext);
   if (!sourceFile) {

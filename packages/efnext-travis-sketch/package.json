@@ -1,5 +1,5 @@
 {
-  "name": "@typespec/efnext",
+  "name": "@typespec/efnext-travis-sketch",
   "version": "0.56.0",
   "author": "Microsoft Corporation",
   "description": "emitter framework prototype",
@@ -14,8 +14,7 @@
     "url": "https://github.com/microsoft/typespec/issues"
   },
   "keywords": [
-    "TypeSpec",
-    "json schema"
+    "TypeSpec"
   ],
   "type": "module",
   "main": "dist/src/index.js",
@@ -23,63 +22,17 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
-    },
-    "./testing": {
-      "types": "./dist/src/testing/index.d.ts",
-      "default": "./dist/src/testing/index.js"
-    },
-    "./framework": {
-      "types": "./dist/src/framework/index.d.ts",
-      "default": "./dist/src/framework/index.js"
-    },
-    "./python": {
-      "types": "./dist/src/python/index.d.ts",
-      "default": "./dist/src/python/index.js"
-    },
-    "./travis-pydantic": {
-      "types": "./dist/src/travis-pydantic/index.d.ts",
-      "default": "./dist/src/travis-pydantic/index.js"
-    },
-    "./travis-python": {
-      "types": "./dist/src/travis-python/index.d.ts",
-      "default": "./dist/src/travis-python/index.js"
-    },
-    "./typescript": {
-      "types": "./dist/src/typescript/index.d.ts",
-      "default": "./dist/src/typescript/index.js"
-    },
-    "./jsx-runtime": {
-      "types": "./dist/src/framework/core/jsx.d.ts",
-      "default": "./dist/src/framework/core/jsx.js"
-    },
-    "./jsx-dev-runtime": {
-      "types": "./dist/src/framework/core/jsx.d.ts",
-      "default": "./dist/src/framework/core/jsx.js"
     }
   },
   "tspMain": "lib/main.tsp",
   "engines": {
     "node": ">=18.0.0"
   },
-  "imports": {
-    "#jsx/jsx-runtime": {
-      "default": "./dist/src/framework/core/jsx.js"
-    },
-    "#jsx/jsx-dev-runtime": {
-      "default": "./dist/src/framework/core/jsx.js"
-    },
-    "#typespec/emitter/python": {
-      "default": "./dist/src/python/index.js"
-    },
-    "#typespec/emitter/core": {
-      "default": "./dist/src/framework/index.js"
-    }
-  },
   "scripts": {
     "clean": "rimraf ./dist ./temp",
     "build": "npm run gen-extern-signature && tsc -p . && npm run lint-typespec-library",
     "watch": "tsc -p . --watch",
-    "gen-extern-signature": "tspd --enable-experimental gen-extern-signature .",
+    "gen-extern-signature": "",
     "lint-typespec-library": "tsp compile . --warn-as-error --import @typespec/library-linter --no-emit",
     "test": "vitest run",
     "test:ui": "vitest --ui",
@@ -113,6 +66,7 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
+    "@typespec/efnext": "workspace:~",
     "change-case": "~5.4.4",
     "prettier": "~3.2.5",
     "yaml": "~2.4.2"

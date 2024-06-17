@@ -33,6 +33,7 @@ words:
   - dogfood
   - eastus
   - ecmarkup
+  - efnext
   - esbenp
   - esbuild
   - espt
@@ -84,6 +85,8 @@ words:
   - protoc
   - psscriptanalyzer
   - pwsh
+  - pydantic
+  - pyproject
   - regen
   - respecify
   - rpaas

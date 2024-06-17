@@ -61,7 +61,7 @@
         "compile",
         "../samples/scratch",
         "--output-dir=temp/scratch-output",
-        "--emit=@typespec/openapi3"
+        "--emit=${workspaceFolder}/packages/efnext-python-sketch",
       ],
       "smartStep": true,
       "sourceMaps": true,

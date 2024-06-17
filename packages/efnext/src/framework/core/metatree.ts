@@ -15,7 +15,7 @@ export interface MetaNode {
 
 export interface SourceFileMetadata {
   path: string;
-  fileType: "typescript" | "python";
+  fileType: "typescript" | "python" | "markdown" | "toml" | "plain-text";
 }
 
 export interface SourceDirectoryMetadata {

@@ -1,10 +1,10 @@
 import { BooleanLiteral, NumericLiteral, StringLiteral } from "@typespec/compiler";
 
-export interface TypeLiteralProps {
+export interface TypeLiteralModel {
   type: BooleanLiteral | StringLiteral | NumericLiteral;
 }
 
-export function TypeLiteral({ type }: TypeLiteralProps) {
+export function TypeLiteral({ type }: TypeLiteralModel) {
   switch (type.kind) {
     case "Boolean":
     case "Number":

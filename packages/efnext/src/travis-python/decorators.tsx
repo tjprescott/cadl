@@ -1,12 +1,12 @@
 import { code } from "../framework/core/index.js";
 import { mapWithSep } from "./utils.js";
 
-export interface DecoratorsProps {
+export interface DecoratorsModel {
   /** The TypeSpec type this understands */
   values: string[] | undefined;
 }
 
-export function Decorators({ values }: DecoratorsProps) {
+export function Decorators({ values }: DecoratorsModel) {
   if (!values) {
     return undefined;
   }

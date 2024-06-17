@@ -2,12 +2,12 @@ import { ModelProperty } from "@typespec/compiler";
 import { useNamePolicy } from "../framework/core/index.js";
 import { TypeExpression } from "./type-expression.js";
 
-export interface ClassVariableProps {
+export interface ClassVariableModel {
   /** The TypeSpec type this understands */
   type: ModelProperty;
 }
 
-export function ClassVariable({ type }: ClassVariableProps) {
+export function ClassVariable({ type }: ClassVariableModel) {
   const namer = useNamePolicy();
   const name = namer.getName(type, "classMember");
   // TODO: Some way to configure whether you actually want types

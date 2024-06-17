@@ -5,11 +5,11 @@ import { isDeclaration } from "../framework/utils/typeguards.js";
 import { Reference } from "./reference.js";
 import { TypeLiteral } from "./type-literal.js";
 
-export interface TypeExpressionProps {
+export interface TypeExpressionModel {
   type: Type;
 }
 
-export function TypeExpression({ type }: TypeExpressionProps) {
+export function TypeExpression({ type }: TypeExpressionModel) {
   // COMMENT: Ideally someone doesn't have to "know" to call these, especially
   // the "no indexer" aspect. This was something EFv1 kind of handled for you.
   if (isDeclaration(type) && !(type as Model).indexer) {

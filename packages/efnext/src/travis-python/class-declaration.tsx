@@ -10,7 +10,7 @@ import { mapWithSep } from "./utils.js";
 /**
  * Represents the properties for a class declaration.
  */
-export interface ClassDeclarationProps {
+export interface ClassDeclarationModel {
   /** The TypeSpec type this understands */
   type: Model;
   /** Name of the class. If not provided, it will be inferred from the type name per naming policy. */
@@ -32,7 +32,7 @@ export interface ClassDeclarationProps {
   // children?: ComponentChildren;
 }
 
-export function ClassDeclaration(props: ClassDeclarationProps) {
+export function ClassDeclaration(props: ClassDeclarationModel) {
   // COMMENT: Is there a way for me to create and set the naming policy I want? What does that look like?
   const namer = useNamePolicy();
   const className = props.name ?? namer.getName(props.type, "class");

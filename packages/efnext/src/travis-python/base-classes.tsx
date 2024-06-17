@@ -1,10 +1,10 @@
 import { mapWithSep } from "./utils.js";
 
-export interface BaseClassesProps {
+export interface BaseClassesModel {
   values: string[] | undefined;
 }
 
-export function BaseClasses({ values }: BaseClassesProps) {
+export function BaseClasses({ values }: BaseClassesModel) {
   if (!values) {
     return undefined;
   }

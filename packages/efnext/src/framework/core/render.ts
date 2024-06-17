@@ -179,7 +179,7 @@ function isSourceNode(element: ComponentChild): element is SourceNode {
 
 export async function printFormatted(
   root: RenderedTreeNode,
-  filetype: "typescript" | "python"
+  filetype: "typescript" | "python" | "toml" | "markdown" | "plain-text"
 ): Promise<string> {
   const raw = print(root);
   // todo: handle langauges we can format/not format.
