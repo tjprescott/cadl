@@ -9,6 +9,7 @@ import {
 } from "@typespec/compiler";
 import { assert, describe, it } from "vitest";
 import { restResponseMutator } from "../src/helpers/rest-operation-response-mutator.js";
+import { createTypeTracker } from "../src/helpers/type-tracker.js";
 import { getProgram } from "./test-host.js";
 
 describe("e2e operation mutator", () => {
@@ -43,8 +44,9 @@ describe("e2e operation mutator", () => {
 
     const iface = Array.from(namespace.interfaces.values()).find((i) => i.name === "A")!;
     const operation = Array.from(iface.operations.values())[0];
+    const tracker = createTypeTracker();
 
-    const { type } = mutateSubgraph(program, [restResponseMutator], operation);
+    const { type } = mutateSubgraph(program, [restResponseMutator(tracker)], operation);
     const mutatedOperation = type as Operation;
 
     assert.equal((mutatedOperation.returnType as any).name, "DemoServiceAFoo200Response");
@@ -102,8 +104,9 @@ describe("e2e operation mutator", () => {
 
     const iface = Array.from(namespace.interfaces.values()).find((i) => i.name === "A")!;
     const operation = Array.from(iface.operations.values())[0];
+    const tracker = createTypeTracker();
 
-    const { type } = mutateSubgraph(program, [restResponseMutator], operation);
+    const { type } = mutateSubgraph(program, [restResponseMutator(tracker)], operation);
     const mutatedOperation = type as Operation;
 
     assert.equal(mutatedOperation.returnType.kind, "Union");
@@ -193,8 +196,9 @@ describe("e2e operation mutator", () => {
 
     const iface = Array.from(namespace.interfaces.values()).find((i) => i.name === "A")!;
     const operation = Array.from(iface.operations.values())[0];
+    const tracker = createTypeTracker();
 
-    const { type } = mutateSubgraph(program, [restResponseMutator], operation);
+    const { type } = mutateSubgraph(program, [restResponseMutator(tracker)], operation);
     const mutatedOperation = type as Operation;
 
     const response = mutatedOperation.returnType as Union;
@@ -282,8 +286,9 @@ describe("e2e operation mutator", () => {
 
     const iface = Array.from(namespace.interfaces.values()).find((i) => i.name === "A")!;
     const operation = Array.from(iface.operations.values())[0];
+    const tracker = createTypeTracker();
 
-    const { type } = mutateSubgraph(program, [restResponseMutator], operation);
+    const { type } = mutateSubgraph(program, [restResponseMutator(tracker)], operation);
     const mutatedOperation = type as Operation;
 
     const response = mutatedOperation.returnType as Union;

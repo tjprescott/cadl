@@ -9,6 +9,7 @@ import { pascalCase } from "change-case";
 import { NotImplementedError, UnreachableCodeError } from "./error.js";
 import { hasRequiredProperties } from "./model-helpers.js";
 import { getOperationFullName } from "./operation-helpers.js";
+import { TypeTracker } from "./type-tracker.js";
 
 /**
  * Mutator object to transform an operation result to REST API response.
@@ -16,7 +17,7 @@ import { getOperationFullName } from "./operation-helpers.js";
  * @constant
  * @type {Mutator}
  */
-export const restResponseMutator: Mutator = {
+export const restResponseMutator: (tracker: TypeTracker) => Mutator = (tracker) => ({
   name: "rest-operation-response-mutator",
   Operation: {
     mutate(op, clone, program, realm) {
@@ -79,6 +80,9 @@ export const restResponseMutator: Mutator = {
           const responseModelName = `${fullOperationName}${statusCodePart}${contentTypePart}Response`;
           const responseModel = realm.typeFactory.model(responseModelName, responseProperties);
           realm.addType(responseModel);
+
+          // We need to track this for emitting
+          tracker.track(responseModel);
           responseModels.push(responseModel);
         }
       }
@@ -96,7 +100,7 @@ export const restResponseMutator: Mutator = {
       }
     },
   },
-};
+});
 
 function getRlcStatusCodeName(statusCodes: number | HttpStatusCodeRange | "*") {
   if (typeof statusCodes === "number") {

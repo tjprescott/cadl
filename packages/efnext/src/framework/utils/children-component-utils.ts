@@ -13,7 +13,7 @@ export function filterComponentFromChildren(
   const childrenArray = coerceArray(children);
   const matches: ComponentChild[] = [];
   const other: ComponentChild[] = [];
-  for (const child of childrenArray) {
+  for (const child of childrenArray ?? []) {
     if (isSourceNode(child) && child.type === type) {
       matches.push(child);
     } else {

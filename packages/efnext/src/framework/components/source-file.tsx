@@ -16,6 +16,7 @@ export interface SourceFileProps {
 interface ImportRecord {
   importPath: string;
   name: string;
+  pathKind?: "relative" | "absolute";
 }
 
 interface SourceFileState {
@@ -57,12 +58,16 @@ export function SourceFile({ path, filetype, children }: SourceFileProps) {
       records.push(record);
     },
   };
+
   const ImportContainer = useResolved(() => {
     let importString = "";
     for (const [importPath, records] of imports) {
       if (filetype === "typescript") {
-        //TODO: hardcoded ./ need to handle local vs external imports
-        importString += `import {${records.map((r) => r.name).join(", ")}} from "./${importPath.replace(/\.ts$/, ".js")}"\n`;
+        const isRelativePath = records.some(
+          (r) => r.pathKind === undefined || r.pathKind === "relative"
+        );
+        const pathPrefix = isRelativePath ? "./" : "";
+        importString += `import {${records.map((r) => r.name).join(", ")}} from "${pathPrefix}${importPath.replace(/\.ts$/, ".js")}"\n`;
       }
 
       if (filetype === "python") {

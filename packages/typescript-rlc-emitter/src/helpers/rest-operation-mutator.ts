@@ -5,6 +5,7 @@ import { NotImplementedError, UnreachableCodeError } from "./error.js";
 import { getHttpParameters } from "./http-utils.js";
 import { hasRequiredProperties } from "./model-helpers.js";
 import { getOperationFullName } from "./operation-helpers.js";
+import { TypeTracker } from "./type-tracker.js";
 
 /**
  * Mutator object to transform operations to REST API requests.
@@ -12,13 +13,17 @@ import { getOperationFullName } from "./operation-helpers.js";
  * @constant
  * @type {Mutator}
  */
-export const restOperationMutator: Mutator = {
+export const restOperationMutator: (tracker: TypeTracker) => Mutator = (tracker) => ({
   name: "rest-operation-mutator",
   Operation: {
     mutate(op, clone, program, realm) {
       if (!isHttpOperation(program, op)) {
         return;
       }
+
+      // Track the cloned operation for emitting
+      // We'll need to track all non anonymous models we create in this mutator.
+      tracker.track(clone);
 
       const [httpOperation] = getHttpOperation(program, op);
 
@@ -60,7 +65,6 @@ export const restOperationMutator: Mutator = {
           // TODO: Need to do anything with containsMetadataAnnotations? Probably not
           const isOptionalBody =
             httpBody.type.kind === "Model" ? !hasRequiredProperties(httpBody.type) : undefined;
-          console.log(`isOptionalBody: ${isOptionalBody}`);
           const bodyProperty = realm.typeFactory.modelProperty("body", httpBody.type, {
             optional: isOptionalBody,
           });
@@ -85,12 +89,9 @@ export const restOperationMutator: Mutator = {
         parameterModelProperties
       );
 
-      console.log(
-        "optionsParameters",
-        parameterModelProperties.map((p) => p.name)
-      );
+      tracker.track(operationParameter);
+
       const isOptionalOptions = !hasRequiredProperties(parameterModelProperties);
-      console.log(`isOptionalOptions: ${isOptionalOptions}`);
       const optionsParameterProp = realm.typeFactory.modelProperty("options", operationParameter, {
         optional: isOptionalOptions,
       });
@@ -102,7 +103,7 @@ export const restOperationMutator: Mutator = {
       clone.parameters = params;
     },
   },
-};
+});
 
 function isHttpOperation(program: Program, op: Operation): boolean {
   if (!op.interface && !op.namespace) {
