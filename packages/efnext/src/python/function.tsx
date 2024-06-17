@@ -2,22 +2,15 @@ import { SourceNode } from "#jsx/jsx-runtime";
 import { Model, Operation } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { code } from "../framework/core/code.js";
-import { TypeExpression } from "./type-expression.js";
 import { useNamePolicy } from "../framework/core/name-policy.js";
+import { coerceArray } from "../framework/utils/coerce-array.js";
+import { TypeExpression } from "./type-expression.js";
 
 export interface FunctionProps {
   type?: Operation;
   name?: string;
   refkey?: unknown;
   children?: SourceNode[];
-}
-
-function coerceArray(v: unknown): any {
-  if (v === null || v === undefined || Array.isArray(v)) {
-    return v;
-  }
-
-  return [v];
 }
 
 export function Function({ type, name, children, refkey }: FunctionProps) {

@@ -4,6 +4,7 @@ import { pascalCase } from "change-case";
 import { NotImplementedError, UnreachableCodeError } from "./error.js";
 import { getHttpParameters } from "./http-utils.js";
 import { hasRequiredProperties } from "./model-helpers.js";
+import { getOperationFullName } from "./operation-helpers.js";
 
 /**
  * Mutator object to transform operations to REST API requests.
@@ -32,7 +33,7 @@ export const restOperationMutator: Mutator = {
           "queryParameters",
           realm.typeFactory.model("", httpQuery),
           {
-            optional: !hasRequiredProperties(realm.typeFactory.model("", httpQuery)),
+            optional: !hasRequiredProperties(httpQuery),
           }
         );
 
@@ -45,7 +46,7 @@ export const restOperationMutator: Mutator = {
         const headerParamsProperty = realm.typeFactory.modelProperty(
           "headers",
           realm.typeFactory.model("", httpHeaders),
-          { optional: !hasRequiredProperties(realm.typeFactory.model("", httpHeaders)) }
+          { optional: !hasRequiredProperties(httpHeaders) }
         );
 
         realm.addType(headerParamsProperty);
@@ -59,6 +60,7 @@ export const restOperationMutator: Mutator = {
           // TODO: Need to do anything with containsMetadataAnnotations? Probably not
           const isOptionalBody =
             httpBody.type.kind === "Model" ? !hasRequiredProperties(httpBody.type) : undefined;
+          console.log(`isOptionalBody: ${isOptionalBody}`);
           const bodyProperty = realm.typeFactory.modelProperty("body", httpBody.type, {
             optional: isOptionalBody,
           });
@@ -75,15 +77,29 @@ export const restOperationMutator: Mutator = {
 
       // Next, we need to create the request options parameter. Which needs to override the standard shape RequestParameters from the core lib.
       // We'll create a model for this.
-      const parameterModelName = pascalCase(`${op.name} RequestParameters`);
+
+      const opFullName = getOperationFullName(op);
+      const parameterModelName = pascalCase(`${opFullName}RequestParameters`);
       const operationParameter = realm.typeFactory.model(
         parameterModelName,
         parameterModelProperties
       );
 
+      console.log(
+        "optionsParameters",
+        parameterModelProperties.map((p) => p.name)
+      );
+      const isOptionalOptions = !hasRequiredProperties(parameterModelProperties);
+      console.log(`isOptionalOptions: ${isOptionalOptions}`);
+      const optionsParameterProp = realm.typeFactory.modelProperty("options", operationParameter, {
+        optional: isOptionalOptions,
+      });
+
+      const params = realm.typeFactory.model("", [optionsParameterProp]);
+
       realm.addType(operationParameter);
       realm.remove(clone.parameters);
-      clone.parameters = operationParameter;
+      clone.parameters = params;
     },
   },
 };

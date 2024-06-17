@@ -37,7 +37,7 @@ describe("e2e typescript rlc emitter", () => {
       const formattedActual = await format(files[1].content, { parser: "typescript" });
       const formattedExpected = await format(
         `
-        import { DemoServiceWidgetsget200Response } from "./models.js";
+        import { DemoServiceWidgetsList200Response } from "./models.js";
   
         export interface Client {
           (path: "/widgets"): {

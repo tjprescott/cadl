@@ -1,4 +1,12 @@
-import { Model, Operation, Scalar, StringLiteral, Union, mutateSubgraph } from "@typespec/compiler";
+import {
+  Model,
+  ModelProperty,
+  Operation,
+  Scalar,
+  StringLiteral,
+  Union,
+  mutateSubgraph,
+} from "@typespec/compiler";
 import { assert, describe, it } from "vitest";
 import { restResponseMutator } from "../src/helpers/rest-operation-response-mutator.js";
 import { getProgram } from "./test-host.js";
@@ -55,6 +63,96 @@ describe("e2e operation mutator", () => {
     assert.equal(body.type.kind, "Model");
     assert.equal((body.type as Model).name, "Widget");
     assert.isDefined((body.type as Model).properties.get("name"));
+  });
+
+  it("should handle an operation with responses for different content-types", async () => {
+    const program = await getProgram(
+      `
+      import "@typespec/http";
+
+      using TypeSpec.Http;
+      @service({
+        title: "Widget Service",
+      })
+      namespace DemoService;
+
+      @route("/widgets")
+      @tag("Widgets")
+      interface A {
+        // This should be mutated into DemoServiceAFoo200Response
+        @get foo(): Widget | BinaryWidget;
+      }
+
+      model Widget {
+        @header contentType: "application/json";
+        name: string;
+      }
+
+      model BinaryWidget {
+        @header contentType: "application/octet-stream";
+        content: bytes;
+      }
+        `,
+      { libraries: ["Http"] }
+    );
+
+    const namespace = Array.from(program.getGlobalNamespaceType().namespaces.values()).filter(
+      (n) => n.name === "DemoService"
+    )[0];
+
+    const iface = Array.from(namespace.interfaces.values()).find((i) => i.name === "A")!;
+    const operation = Array.from(iface.operations.values())[0];
+
+    const { type } = mutateSubgraph(program, [restResponseMutator], operation);
+    const mutatedOperation = type as Operation;
+
+    assert.equal(mutatedOperation.returnType.kind, "Union");
+
+    const responseUnion = mutatedOperation.returnType as Union;
+
+    assert.equal(responseUnion.variants.size, 2);
+
+    const variants = Array.from(responseUnion.variants.values());
+
+    const widgetModel = variants[0].type as Model;
+    assert.equal(widgetModel.name, "DemoServiceAFoo200Response");
+    assert.equal((widgetModel.properties.get("status")?.type as StringLiteral).value, "200");
+
+    const widgetModelHeaders = widgetModel.properties.get("headers")! as ModelProperty;
+    assert.isDefined(widgetModelHeaders);
+    assert.equal(widgetModelHeaders.type.kind, "Model");
+
+    const widgetResponseContentType = (widgetModelHeaders.type as Model).properties.get(
+      "content-type"
+    ) as ModelProperty;
+    assert.equal((widgetResponseContentType.type as StringLiteral).value, "application/json");
+
+    const binaryWidgetModel = variants[1].type as Model;
+    assert.equal(binaryWidgetModel.name, "DemoServiceAFoo200ApplicationOctetStreamResponse");
+    assert.equal((binaryWidgetModel.properties.get("status")?.type as StringLiteral).value, "200");
+
+    const binaryWidgetModelHeaders = binaryWidgetModel.properties.get("headers")! as ModelProperty;
+
+    assert.isDefined(binaryWidgetModelHeaders);
+    assert.equal(binaryWidgetModelHeaders.type.kind, "Model");
+
+    const binaryWidgetResponseContentType = (binaryWidgetModelHeaders.type as Model).properties.get(
+      "content-type"
+    ) as ModelProperty;
+    assert.equal(
+      (binaryWidgetResponseContentType.type as StringLiteral).value,
+      "application/octet-stream"
+    );
+
+    const binaryResponseBody = binaryWidgetModel.properties.get("body")!;
+    assert.isDefined(binaryResponseBody);
+    assert.equal(binaryResponseBody.type.kind, "Model");
+    assert.isDefined((binaryResponseBody.type as Model).properties.get("content"));
+    assert.equal((binaryResponseBody.type as Model).properties.get("content")?.type.kind, "Scalar");
+    assert.equal(
+      ((binaryResponseBody.type as Model).properties.get("content")?.type as Scalar).name,
+      "bytes"
+    );
   });
 
   it("should handle an operation with a single response and an error", async () => {

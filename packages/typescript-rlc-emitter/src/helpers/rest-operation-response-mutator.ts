@@ -1,4 +1,4 @@
-import { Interface, Model, ModelProperty, Mutator, Namespace, Realm } from "@typespec/compiler";
+import { Model, ModelProperty, Mutator, Realm } from "@typespec/compiler";
 import {
   HttpOperationBody,
   HttpOperationMultipartBody,
@@ -8,6 +8,7 @@ import {
 import { pascalCase } from "change-case";
 import { NotImplementedError, UnreachableCodeError } from "./error.js";
 import { hasRequiredProperties } from "./model-helpers.js";
+import { getOperationFullName } from "./operation-helpers.js";
 
 /**
  * Mutator object to transform an operation result to REST API response.
@@ -68,15 +69,14 @@ export const restResponseMutator: Mutator = {
           }
 
           // Get the name for our new model
-          const containerName = getContainerFullName(httpOperation.container);
-          const operationName = pascalCase(httpOperation.operation.name);
+          const fullOperationName = getOperationFullName(httpOperation.operation);
           const statusCodePart = getRlcStatusCodeName(httpResponse.statusCodes);
           const contentTypePart = contentTypes
             .filter((c) => c !== "application/json")
             .map((contentType) => pascalCase(contentType))
             .join("");
 
-          const responseModelName = `${containerName}${operationName}${statusCodePart}${contentTypePart}Response`;
+          const responseModelName = `${fullOperationName}${statusCodePart}${contentTypePart}Response`;
           const responseModel = realm.typeFactory.model(responseModelName, responseProperties);
           realm.addType(responseModel);
           responseModels.push(responseModel);
@@ -118,9 +118,6 @@ function getRlcResponseBodyProperty(
     const isOptionalBody =
       body.type.kind === "Model" ? !hasRequiredProperties(body.type) : undefined;
 
-    //TODO: should we clone the body type before adding it to the model?
-    const name = (body.type as any)?.name;
-    console.log(name ? name : `No name ${body.type.kind}`);
     const bodyProperty = realm.typeFactory.modelProperty("body", realm.clone(body.type), {
       optional: isOptionalBody,
     });
@@ -142,6 +139,23 @@ function getRlcResponseHeaderProperty(
   contentTypes: string[]
 ): ModelProperty {
   const responseHeaders: ModelProperty[] = [];
+
+  // Content type header is not included in the headers object in HttpOperationResponse, it is a property of the body
+  // We need to put it back in the headers
+  if (contentTypes.length === 1) {
+    const contentTypeHeader = realm.typeFactory.modelProperty(
+      "content-type",
+      // TODO: when would this have more than one content-type?
+      realm.typeFactory.stringLiteral(contentTypes[0])
+    );
+
+    realm.addType(contentTypeHeader);
+    realm.typeFactory.finishType(contentTypeHeader);
+    responseHeaders.push(contentTypeHeader);
+  } else {
+    throw new NotImplementedError("Handling multiple content types is not implemented yet.");
+  }
+
   for (const key in headers) {
     const header = realm.clone(headers[key]);
 
@@ -186,14 +200,4 @@ function getRlcStatusCodeProperty(
   }
 
   throw new NotImplementedError("Handling StatusCodeRange is not implemented yet.");
-}
-
-function getContainerFullName(container: Interface | Namespace | undefined): string {
-  if (!container) {
-    return "";
-  }
-
-  const containerName = container.name;
-  // TODO: Handle casing
-  return getContainerFullName(container.namespace) + containerName;
 }

@@ -9,6 +9,10 @@ export interface SourceNode {
   props: ComponentProps;
 }
 
+export function isSourceNode(node: any): node is SourceNode {
+  return typeof node === "object" && "type" in node && "props" in node;
+}
+
 export type ComponentChild =
   | SourceNode
   | string
