@@ -38,12 +38,10 @@ export const restResponseMutator: (tracker: TypeTracker) => Mutator = (tracker) 
           // Start by creating the new return type model.
 
           // Note: Typespec makes content-type case insensitive
-          const contentTypes = response.body?.contentTypes;
+          let contentTypes = response.body?.contentTypes;
 
           if (!contentTypes || contentTypes.length === 0) {
-            throw new NotImplementedError(
-              "Handling responses without content-types is not implemented yet."
-            );
+            contentTypes = ["application/json"];
           }
 
           // Here we know that the current response body shape corresponds to the contentTypes we extracted above

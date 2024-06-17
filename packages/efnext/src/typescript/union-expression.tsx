@@ -15,7 +15,7 @@ export function UnionExpression({ type }: UnionExpressionProps) {
         {mapWithSep(
           members,
           (member) => {
-            return <Value jsValue={member.value} />;
+            return <Value jsValue={member.value ?? member.name} />;
           },
           " | "
         )}
