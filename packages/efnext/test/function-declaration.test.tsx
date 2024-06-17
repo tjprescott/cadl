@@ -102,7 +102,7 @@ describe("Typescript Function Declaration", () => {
         await assertEqual(res, `export function createPerson(name: string, age: number): string{}`);
       });
 
-      it("can ender function body", async () => {
+      it("can render function body", async () => {
         const program = await getProgram(`
         namespace DemoService;
         op createPerson(id: string): string;

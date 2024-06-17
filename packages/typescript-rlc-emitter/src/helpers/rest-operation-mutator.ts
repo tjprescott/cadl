@@ -21,10 +21,6 @@ export const restOperationMutator: (tracker: TypeTracker) => Mutator = (tracker)
         return;
       }
 
-      // Track the cloned operation for emitting
-      // We'll need to track all non anonymous models we create in this mutator.
-      tracker.track("response", clone);
-
       const [httpOperation] = getHttpOperation(program, op);
 
       // The first thing we need to do, is to rename the operation from the "friendly" name to the actual HTTP method.

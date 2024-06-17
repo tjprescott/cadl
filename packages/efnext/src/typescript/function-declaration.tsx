@@ -1,8 +1,9 @@
 import { ComponentChildren, SourceNode } from "#jsx/jsx-runtime";
-import { Model, ModelProperty, Operation } from "@typespec/compiler";
+import { Model, ModelProperty, Operation, Union } from "@typespec/compiler";
 import { Declaration } from "../framework/components/declaration.js";
 import { code } from "../framework/core/code.js";
 import { useNamePolicy } from "../framework/core/name-policy.js";
+import { filterComponentFromChildren } from "../framework/utils/children-component-utils.js";
 import { Block } from "./block.js";
 import { TypeExpression } from "./type-expression.js";
 
@@ -14,50 +15,48 @@ export interface FunctionDeclarationProps {
   children?: ComponentChildren;
 }
 
-function coerceArray(v: unknown): any {
-  if (v === null || v === undefined || Array.isArray(v)) {
-    return v;
-  }
-
-  return [v];
-}
-
 export function FunctionDeclaration({
   type,
   parameters,
   name,
   refkey,
-  children,
+  children: allChildren,
 }: FunctionDeclarationProps) {
   const functionName = name ?? useNamePolicy().getName(type!, "function");
 
-  const parametersChild = coerceArray(children)?.find(
-    (child: any) => child.type === FunctionDeclaration.Parameters
+  const [parametersChild, childrenWithNoParams] = filterComponentFromChildren(
+    allChildren,
+    FunctionDeclaration.Parameters
   );
-  const bodyChild = coerceArray(children)?.find(
-    (child: any) => child.type === FunctionDeclaration.Body
+  const [bodyChild, childrenWithNoBody] = filterComponentFromChildren(
+    childrenWithNoParams,
+    FunctionDeclaration.Body
+  );
+  const [customReturnType, children] = filterComponentFromChildren(
+    childrenWithNoBody,
+    FunctionDeclaration.ReturnType
   );
 
-  // Filter out parametersChild and bodyChild from children
-  const filteredChildren = coerceArray(children)?.filter(
-    (child: any) => child !== parametersChild && child !== bodyChild
-  );
-
-  const sReturnType = type?.returnType ? (
+  let sReturnType = type?.returnType ? (
     <>
       :<TypeExpression type={type.returnType} />
     </>
   ) : undefined;
-  const sParams = parametersChild ? (
+
+  if (customReturnType?.length) {
+    sReturnType = <>: {customReturnType}</>;
+  }
+
+  const sParams = parametersChild?.length ? (
     parametersChild
   ) : (
     <FunctionDeclaration.Parameters type={type?.parameters} parameters={parameters} />
   );
 
-  let sBody = bodyChild ? (
+  const sBody = bodyChild?.length ? (
     bodyChild
   ) : (
-    <FunctionDeclaration.Body>{filteredChildren}</FunctionDeclaration.Body>
+    <FunctionDeclaration.Body>{children}</FunctionDeclaration.Body>
   );
 
   return (
@@ -124,4 +123,19 @@ export interface FunctionBodyProps {
 
 FunctionDeclaration.Body = function Body({ operation, children }: FunctionBodyProps) {
   return children;
+};
+
+export interface FunctionReturnTypeProps {
+  type?: Model | Union;
+  children?: SourceNode[];
+}
+
+FunctionDeclaration.ReturnType = function ReturnType({ type, children }: FunctionReturnTypeProps) {
+  if (children) {
+    return children;
+  } else if (type) {
+    return <TypeExpression type={type} />;
+  }
+
+  return <></>;
 };

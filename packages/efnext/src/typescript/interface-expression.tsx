@@ -1,5 +1,6 @@
 import { ComponentChildren } from "#jsx/jsx-runtime";
 import { Interface, Model, ModelProperty, Operation } from "@typespec/compiler";
+import { filterComponentFromChildren } from "../framework/utils/children-component-utils.js";
 import { isInterface, isModel } from "../framework/utils/typeguards.js";
 import { Block } from "./block.js";
 import { InterfaceMember } from "./interface-member.js";
@@ -9,9 +10,10 @@ export interface InterfaceExpressionProps {
   children?: ComponentChildren;
 }
 
-export function InterfaceExpression({ type, children }: InterfaceExpressionProps) {
+export function InterfaceExpression({ type, children: allChildren }: InterfaceExpressionProps) {
   const members = [];
   let typeMembers: IterableIterator<ModelProperty | Operation> | undefined;
+  const [childrenMembers, children] = filterComponentFromChildren(allChildren, InterfaceMember);
 
   if (type) {
     if (isModel(type)) {
@@ -25,9 +27,14 @@ export function InterfaceExpression({ type, children }: InterfaceExpressionProps
     }
   }
 
-  if (children) {
-    members.push(children);
+  if (childrenMembers) {
+    members.push(childrenMembers);
   }
 
-  return <Block>{members}</Block>;
+  return (
+    <Block>
+      {members}
+      {children}
+    </Block>
+  );
 }

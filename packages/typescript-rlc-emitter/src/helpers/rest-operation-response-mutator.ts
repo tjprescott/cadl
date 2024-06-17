@@ -120,7 +120,7 @@ function getRlcResponseBodyProperty(
     const isOptionalBody =
       body.type.kind === "Model" ? !hasRequiredProperties(body.type) : undefined;
 
-    const bodyProperty = realm.typeFactory.modelProperty("body", realm.clone(body.type), {
+    const bodyProperty = realm.typeFactory.modelProperty("body", body.type, {
       optional: isOptionalBody,
     });
 
@@ -159,7 +159,7 @@ function getRlcResponseHeaderProperty(
   }
 
   for (const key in headers) {
-    const header = realm.clone(headers[key]);
+    const header = headers[key];
 
     // If there is more than one content type we need to create a union type for the header
     if (contentTypes.length > 0) {

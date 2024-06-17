@@ -9,7 +9,7 @@ import { coerceArray } from "./coerce-array.js";
 export function filterComponentFromChildren(
   children: ComponentChildren,
   type: unknown
-): [ComponentChild[], ComponentChild[]] {
+): [ComponentChild[], ComponentChild[] | undefined] {
   const childrenArray = coerceArray(children);
   const matches: ComponentChild[] = [];
   const other: ComponentChild[] = [];
