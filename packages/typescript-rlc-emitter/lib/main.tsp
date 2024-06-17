@@ -1,1 +1,1 @@
-// model Test {}
+namespace Typespec.TypeScript.RlcEmitter;

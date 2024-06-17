@@ -42,9 +42,10 @@ describe("Rest Operation Parameter Component", () => {
       const tracker = createTypeTracker();
       mutateSubgraph(program, [restOperationMutator(tracker)], operation);
 
-      const parameterModel = tracker.getTracked().find((t) => t.kind === "Model")! as Model;
+      const parameters = tracker.getTracked("parameter");
 
-      assert.isDefined(parameterModel);
+      assert.isDefined(parameters);
+      const parameterModel = parameters[0] as Model;
 
       const node = await render(
         <EmitOutput>
@@ -97,7 +98,9 @@ describe("Rest Operation Parameter Component", () => {
       const tracker = createTypeTracker();
       mutateSubgraph(program, [restOperationMutator(tracker)], operation);
 
-      const parameterModel = tracker.getTracked().find((t) => t.kind === "Model")! as Model;
+      const parameterModel = tracker
+        .getTracked("parameter")
+        .find((t) => t.kind === "Model")! as Model;
 
       assert.isDefined(parameterModel);
 

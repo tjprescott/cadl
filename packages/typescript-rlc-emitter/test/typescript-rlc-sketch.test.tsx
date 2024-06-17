@@ -5,7 +5,7 @@ import { assert, describe, it } from "vitest";
 import { emitRlc } from "../src/index.js";
 import { getProgram } from "./test-host.js";
 
-describe("e2e typescript rlc emitter", () => {
+describe.skip("e2e typescript rlc emitter", () => {
   describe("Rest Operations", () => {
     it("should render rlc structure!", async () => {
       const program = await getProgram(

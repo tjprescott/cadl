@@ -82,7 +82,7 @@ export const restResponseMutator: (tracker: TypeTracker) => Mutator = (tracker) 
           realm.addType(responseModel);
 
           // We need to track this for emitting
-          tracker.track(responseModel);
+          tracker.track("response", responseModel);
           responseModels.push(responseModel);
         }
       }

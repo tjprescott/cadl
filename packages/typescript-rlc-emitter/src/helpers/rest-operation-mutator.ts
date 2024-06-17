@@ -23,7 +23,7 @@ export const restOperationMutator: (tracker: TypeTracker) => Mutator = (tracker)
 
       // Track the cloned operation for emitting
       // We'll need to track all non anonymous models we create in this mutator.
-      tracker.track(clone);
+      tracker.track("response", clone);
 
       const [httpOperation] = getHttpOperation(program, op);
 
@@ -89,7 +89,7 @@ export const restOperationMutator: (tracker: TypeTracker) => Mutator = (tracker)
         parameterModelProperties
       );
 
-      tracker.track(operationParameter);
+      tracker.track("parameter", operationParameter);
 
       const isOptionalOptions = !hasRequiredProperties(parameterModelProperties);
       const optionsParameterProp = realm.typeFactory.modelProperty("options", operationParameter, {
