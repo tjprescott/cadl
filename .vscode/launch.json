@@ -60,8 +60,8 @@
       "args": [
         "compile",
         "../samples/scratch",
-        "--output-dir=temp/scratch-output",
-        "--emit=${workspaceFolder}/packages/efnext-python-sketch",
+        "--output-dir=${workspaceFolder}/tsp-output",
+        "--emit=${workspaceFolder}/packages/efnext-travis-sketch",
       ],
       "smartStep": true,
       "sourceMaps": true,

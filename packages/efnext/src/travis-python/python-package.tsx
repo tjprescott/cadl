@@ -1,3 +1,4 @@
+import * as pathLib from "path";
 import { SourceDirectory, SourceFile } from "../framework/components/index.js";
 import { PythonModule, PythonModuleModel } from "./python-module.js";
 
@@ -14,13 +15,12 @@ export interface PythonPackageModel {
 export function PythonPackage({ name, path, subpackages, modules }: PythonPackageModel) {
   const packageComponents = subpackages?.map((pkg) => <PythonPackage {...pkg} />);
   const moduleComponents = modules?.map((mod) => <PythonModule {...mod} />);
-  const folderPath = `${path}/${name}`;
-  const initPath = `${folderPath}/__init__.py`;
+  const initPath = pathLib.join(path, "__init__.py");
   // TODO: Make components for each of these key files?
   return (
-    <SourceDirectory path={folderPath}>
-      <SourceFile path={initPath} filetype="python"></SourceFile>
+    <SourceDirectory path={path}>
       {packageComponents}
+      <SourceFile path={initPath} filetype="python" />
       {moduleComponents}
     </SourceDirectory>
   );

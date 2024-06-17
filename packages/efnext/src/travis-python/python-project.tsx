@@ -23,7 +23,9 @@ export interface PythonProjectModel {
   packages: PythonPackageModel[];
 }
 export function PythonProject({ name, path, version, packages }: PythonProjectModel) {
-  const packageComponents = packages.map((pkg) => <PythonPackage {...pkg} />);
+  const packageComponents = packages.map((pkg) => {
+    return <PythonPackage {...pkg} />;
+  });
   // TODO: Make components for each of these key files? Also, add necessary file types.
   return (
     <SourceDirectory path={path}>
@@ -31,7 +33,7 @@ export function PythonProject({ name, path, version, packages }: PythonProjectMo
       <SourceFile path="LICENSE" filetype="plain-text" />
       <SourceFile path="README.md" filetype="markdown" />
       <SourceFile path="setup.py" filetype="python" />
-      <SourceDirectory path="{path}/src">{packageComponents}</SourceDirectory>
+      <SourceDirectory path="src">{packageComponents}</SourceDirectory>
     </SourceDirectory>
   );
 }

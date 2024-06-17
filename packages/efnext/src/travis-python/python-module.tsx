@@ -13,7 +13,7 @@ export interface PythonModuleModel {
 }
 export function PythonModule({ name, declarations }: PythonModuleModel) {
   return (
-    <SourceFile path="models.py" filetype="python">
+    <SourceFile path={name} filetype="python">
       {declarations}
     </SourceFile>
   );
