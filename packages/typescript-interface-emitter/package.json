@@ -17,7 +17,7 @@
     "TypeSpec"
   ],
   "type": "module",
-  "main": "dist/src/python-sketch/index.js",
+  "main": "dist/src/index.js",
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
