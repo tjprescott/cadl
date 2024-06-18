@@ -31,7 +31,7 @@ export function InterfaceDeclaration({ type, name, children }: InterfaceDeclarat
   }
 
   return (
-    <Declaration name={ifaceName} refkey={type}>
+    <Declaration name={ifaceName} refkey={type ?? ifaceName}>
       export interface {ifaceName} {extendsClause}{" "}
       <InterfaceExpression type={type}>{children}</InterfaceExpression>
     </Declaration>

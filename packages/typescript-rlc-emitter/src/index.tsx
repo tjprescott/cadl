@@ -13,7 +13,8 @@ import {
   UnionDeclaration,
   typescriptNamePolicy,
 } from "@typespec/efnext/typescript";
-import { HttpOperation, getAllHttpServices } from "@typespec/http";
+import { HttpOperation, HttpService, getAllHttpServices } from "@typespec/http";
+import { RestClientDefinition } from "./components/rest-client-definition.js";
 import { RestOperationParameter } from "./components/rest-operation-parameter.js";
 import { RestResource } from "./components/rest-resource.js";
 import { HelperContext, StateHelpers, getStateHelpers } from "./helpers/helpers.js";
@@ -29,7 +30,10 @@ export async function $onEmit(context: EmitContext) {
 
 export function emitRlc(context: EmitContext) {
   const helpers = getStateHelpers(context);
-  const { restResources, models, parameters, enums, responses } = queryProgram(context, helpers);
+  const { restResources, models, parameters, enums, responses, httpService } = queryProgram(
+    context,
+    helpers
+  );
 
   const resources = Array.from(restResources.entries());
   return (
@@ -55,11 +59,12 @@ export function emitRlc(context: EmitContext) {
             })}
           </SourceFile>
           <SourceFile path="clientDefinitions.ts" filetype="typescript">
-            <InterfaceDeclaration name="Client">
+            <InterfaceDeclaration name="Routes">
               {resources.map(([path, operations]) => (
                 <RestResource path={path} operations={operations} />
               ))}
             </InterfaceDeclaration>
+            <RestClientDefinition httpType={httpService} />
           </SourceFile>
         </SourceDirectory>
       </HelperContext.Provider>
@@ -73,6 +78,7 @@ interface RlcRecord {
   enums: Enum[];
   parameters: Model[];
   responses: Model[];
+  httpService: HttpService;
 }
 
 function queryProgram({ program }: EmitContext, helpers: StateHelpers): RlcRecord {
@@ -139,6 +145,7 @@ function queryProgram({ program }: EmitContext, helpers: StateHelpers): RlcRecor
     enums,
     parameters,
     responses,
+    httpService: service,
   };
 }
 

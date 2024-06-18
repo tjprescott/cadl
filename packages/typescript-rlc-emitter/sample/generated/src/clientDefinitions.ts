@@ -1,4 +1,4 @@
-import { StreamableMethod } from "@typespec/ts-http-runtime";
+import { StreamableMethod, Client } from "@typespec/ts-http-runtime";
 import {
   DemoServiceWidgetsListRequestParameters,
   DemoServiceWidgetsCreateRequestParameters,
@@ -22,7 +22,7 @@ import {
   DemoServiceWidgetsAnalyzeDefaultResponse,
 } from "./responses.js";
 
-export interface Client {
+export interface Routes {
   (path: "/widgets"): {
     get(
       options?: DemoServiceWidgetsListRequestParameters,
@@ -70,3 +70,4 @@ export interface Client {
     >;
   };
 }
+export type DemoServiceClient = Client & { path: Routes };

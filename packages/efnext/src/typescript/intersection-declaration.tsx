@@ -41,7 +41,7 @@ export function IntersectionDeclaration({
         return code`
         ${constituent} &`;
       })}
-      <InterfaceExpression type={type}>{children}</InterfaceExpression>
+      {type ? <InterfaceExpression type={type}>{children}</InterfaceExpression> : <>{children}</>}
     </Declaration>
   );
 }
