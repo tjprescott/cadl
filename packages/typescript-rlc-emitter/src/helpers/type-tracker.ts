@@ -8,7 +8,7 @@ export interface TypeTracker {
   getTracked(group: TypeTrackingGroup): Type[];
 }
 
-export type TypeTrackingGroup = "parameter" | "response" | "ungrouped";
+export type TypeTrackingGroup = "parameter" | "response" | "model" | "ungrouped";
 
 export function createTypeTracker(): TypeTracker {
   const trackedTypes: Map<TypeTrackingGroup, Set<Type>> = new Map();

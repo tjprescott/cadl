@@ -61,6 +61,7 @@ export const restOperationMutator: (tracker: TypeTracker) => Mutator = (tracker)
           // TODO: Need to do anything with containsMetadataAnnotations? Probably not
           const isOptionalBody =
             httpBody.type.kind === "Model" ? !hasRequiredProperties(httpBody.type) : undefined;
+          tracker.track("model", httpBody.type);
           const bodyProperty = realm.typeFactory.modelProperty("body", httpBody.type, {
             optional: isOptionalBody,
           });

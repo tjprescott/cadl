@@ -124,6 +124,20 @@ function queryProgram({ program }: EmitContext, helpers: StateHelpers): RlcRecor
     {}
   );
 
+  const models = [...modelsInventory.values()].flat() as Model[];
+  const mutatedModels = models
+    .map((model) => {
+      const { type } = helpers.toVisibilityModel(model);
+      if (type === model) {
+        return undefined;
+      }
+
+      return type;
+    })
+    .filter((m) => m !== undefined) as Model[];
+
+  models.push(...mutatedModels);
+
   const httpOperations = service.operations.map((httpOperation) => {
     const mutated = helpers.toRestOperation(httpOperation.operation);
     const operation = mutated.type as Operation;
@@ -134,7 +148,6 @@ function queryProgram({ program }: EmitContext, helpers: StateHelpers): RlcRecor
   });
 
   const restResources = groupByPath(httpOperations);
-  const models = [...modelsInventory.values()].flat() as Model[];
   const enums = [...enumsInventory.values()].flat() as Enum[];
   const parameters = Array.from(helpers.getVisitedTypes().get("parameter") ?? []) as Model[];
   const responses = Array.from(helpers.getVisitedTypes().get("response") ?? []) as Model[];
