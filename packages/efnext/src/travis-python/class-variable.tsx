@@ -12,7 +12,6 @@ export function ClassVariable({ type }: ClassVariableModel) {
   const name = namer.getName(type, "classMember");
   // TODO: Some way to configure whether you actually want types
   // Python doesn't require them.
-
   return (
     <>
       {name}: <TypeExpression type={type.type} />

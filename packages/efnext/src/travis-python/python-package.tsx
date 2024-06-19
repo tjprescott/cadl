@@ -1,5 +1,8 @@
-import * as pathLib from "path";
-import { SourceDirectory, SourceFile } from "../framework/components/index.js";
+import { ComponentChild } from "#jsx/jsx-runtime";
+import { useNamePolicy } from "#typespec/emitter/core";
+import { Namespace } from "@typespec/compiler";
+import { SourceDirectory } from "../framework/components/index.js";
+import { InitFile } from "./init-file.js";
 import { PythonModule, PythonModuleModel } from "./python-module.js";
 
 /** A Python package is basically a SourceDirectory with an __init__ file.
@@ -7,21 +10,25 @@ import { PythonModule, PythonModuleModel } from "./python-module.js";
  * Every package will have an __init__.py file.
  */
 export interface PythonPackageModel {
-  name: string;
-  path: string;
+  type: Namespace;
+  name?: string;
   subpackages?: PythonPackageModel[];
   modules?: PythonModuleModel[];
+  children?: ComponentChild[];
 }
-export function PythonPackage({ name, path, subpackages, modules }: PythonPackageModel) {
+export function PythonPackage({ type, name, subpackages, modules, children }: PythonPackageModel) {
   const packageComponents = subpackages?.map((pkg) => <PythonPackage {...pkg} />);
   const moduleComponents = modules?.map((mod) => <PythonModule {...mod} />);
-  const initPath = pathLib.join(path, "__init__.py");
+  const namer = useNamePolicy();
+  const packageName = name ?? namer.getName(type, "package");
   // TODO: Make components for each of these key files?
+  // TODO: Check if components are already supplied by children
   return (
-    <SourceDirectory path={path}>
+    <SourceDirectory path={packageName}>
+      <InitFile packages={subpackages} />
       {packageComponents}
-      <SourceFile path={initPath} filetype="python" />
       {moduleComponents}
+      {children}
     </SourceDirectory>
   );
 }

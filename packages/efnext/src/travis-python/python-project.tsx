@@ -1,4 +1,5 @@
 import { SourceDirectory, SourceFile } from "../framework/components/index.js";
+import { InitFile } from "./init-file.js";
 import { PythonPackage, PythonPackageModel } from "./python-package.js";
 
 /**
@@ -23,6 +24,7 @@ export interface PythonProjectModel {
   packages: PythonPackageModel[];
 }
 export function PythonProject({ name, path, version, packages }: PythonProjectModel) {
+  // COMMENT: Is there a way to do this looping in the JSX?
   const packageComponents = packages.map((pkg) => {
     return <PythonPackage {...pkg} />;
   });
@@ -33,7 +35,10 @@ export function PythonProject({ name, path, version, packages }: PythonProjectMo
       <SourceFile path="LICENSE" filetype="plain-text" />
       <SourceFile path="README.md" filetype="markdown" />
       <SourceFile path="setup.py" filetype="python" />
-      <SourceDirectory path="src">{packageComponents}</SourceDirectory>
+      <SourceDirectory path="src">
+        <InitFile packages={packages} />
+        {packageComponents}
+      </SourceDirectory>
     </SourceDirectory>
   );
 }

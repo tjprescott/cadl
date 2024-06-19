@@ -1,10 +1,10 @@
+import { ComponentChild } from "#jsx/jsx-runtime";
 import { Model, ModelProperty } from "@typespec/compiler";
 import { Declaration } from "../framework/components/index.js";
 import { code } from "../framework/core/index.js";
 import { useNamePolicy } from "../framework/core/name-policy.js";
-import { BaseClasses } from "./base-classes.js";
 import { ClassVariable } from "./class-variable.js";
-import { Decorators } from "./decorators.js";
+import { Initializer } from "./initializer.js";
 import { mapWithSep } from "./utils.js";
 
 /**
@@ -15,54 +15,62 @@ export interface ClassDeclarationModel {
   type: Model;
   /** Name of the class. If not provided, it will be inferred from the type name per naming policy. */
   name?: string;
-  /** List of decorators to apply */
-  decorators?: string[];
-  /** List of base classes this class derives from, in order. */
-  baseClasses?: string[];
-  /** List of class variables. */
-  classVariables?: string[];
-  /** List of instance variables. */
-  instanceVariables?: string[];
-  /** List of initializers. */
-  initializers?: string[];
-  /** List of methods the class supports. */
-  methods?: string[];
-  // COMMENT: Would you ever *not* have children? Could this model derive from a
-  // base class that has automatically has children?
-  // children?: ComponentChildren;
+  children?: ComponentChild[];
 }
 
-export function ClassDeclaration(props: ClassDeclarationModel) {
+export function ClassDeclaration({ type, name, children }: ClassDeclarationModel) {
   // COMMENT: Is there a way for me to create and set the naming policy I want? What does that look like?
   const namer = useNamePolicy();
-  const className = props.name ?? namer.getName(props.type, "class");
+  // COMMENT: It's kind of annoying that I have to "just know" these kind values. I've had plenty of crashes due
+  // to putting an unsupported value here. Could we expose it as an enum instead?
+  // Alternatively, maybe the name just accepts an enum of known formats (pascalCase, camelCase, etc.)
+  // so you don't have to invent these "kinds" but just state explicitly the desired end-format. Or maybe
+  // that is just a different method on the namer.
+  // COMMENT: Definitely would like getName to accept: Type | string.
+  const className = name ?? namer.getName(type, "class");
 
   // TODO: Sort the model properties based on presence of decorator to separate class and instance variables.
   const classProperties: ModelProperty[] = [];
-  const instanceProperties: ModelProperty[] = [...props.type.properties.values()];
+  const instanceProperties: ModelProperty[] = [];
 
-  const decorators = <Decorators values={props.decorators} />;
-  const baseClasses = <BaseClasses values={props.baseClasses} />;
-  const classVariables = mapWithSep(
+  // COMMENT: While trying to debug this, I noticed the stack trace just became a huge mess of alternating "renderWorker"
+  // and "handleChildren" calls. I never actually could find what instantiated this component in the stack trace. Probably
+  // something we want to look at since it could make it difficult to debug.
+  for (const prop of type.properties.values()) {
+    // FIXME: This should be triggered based on the presence of the @classVariable decorator.
+    // But I can't get it to work. I suspect something isn't being exported fully, but it's
+    // a distraction right now so I'll just use this wonky magic string for testing.
+    if (prop.name === "special") {
+      classProperties.push(prop);
+    } else {
+      instanceProperties.push(prop);
+    }
+  }
+
+  const classVariableComponents = mapWithSep(
     classProperties,
     (prop) => {
       return <ClassVariable type={prop} />;
     },
     "\n"
   );
-  // TODO: Implement these
-  const initializers = "";
-  const methods = "";
+  const initializerComponents = <Initializer type={instanceProperties} />;
 
+  // TODO: Implement these
+  const methodComponents = undefined;
+  const decoratorComponents = undefined; //<Decorators values={decorators} />;
+  const baseClassComponents = undefined; //<BaseClasses values={baseClasses} />;
+
+  // TODO: Check if anything is already defined in children
   return (
-    // COMMENT: refkey is confusing to me. What is it? Add JS docs to core components would help.
-    <Declaration name={className} refkey={props.type}>
+    <Declaration name={className} refkey={type}>
       {code`
-        ${decorators}
-        class ${className}${baseClasses}:
-          ${classVariables}
-          ${initializers}
-          ${methods}
+        ${decoratorComponents}
+        class ${className}${baseClassComponents}:
+          ${classVariableComponents}
+          ${initializerComponents}
+          ${methodComponents}
+          ${children}
       `}
     </Declaration>
   );

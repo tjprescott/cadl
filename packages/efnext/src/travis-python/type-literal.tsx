@@ -5,6 +5,7 @@ export interface TypeLiteralModel {
 }
 
 export function TypeLiteral({ type }: TypeLiteralModel) {
+  // TODO: Need to ensure that `Literal` is imported from `typing`.
   switch (type.kind) {
     case "Boolean":
     case "Number":

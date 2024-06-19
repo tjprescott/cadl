@@ -1,10 +1,12 @@
 import { EmitContext, Namespace } from "@typespec/compiler";
 import { EmitOutput, emit } from "@typespec/efnext/framework";
 import {
+  CollectedTypes,
   PythonModuleModel,
   PythonPackageModel,
   PythonProject,
   PythonProjectModel,
+  TypeCollector,
   pythonNamePolicy,
 } from "@typespec/efnext/travis-python";
 import { getAllHttpServices } from "@typespec/http";
@@ -25,7 +27,7 @@ export async function $onEmit(context: EmitContext) {
   await emit(
     context,
     <EmitOutput namePolicy={pythonNamePolicy}>
-      <PythonProject {...projectModel} />
+      <PythonProject {...projectModel}></PythonProject>
     </EmitOutput>
   );
 }
@@ -39,18 +41,28 @@ function createProjectModel({ program }: EmitContext): PythonProjectModel {
   if (services.length === 0) {
     throw new Error("No service found");
   }
-
   const service = services[0];
-  const projectName = service.namespace.name;
+  const serviceNamespaceName = service.namespace.name;
+  const collector = new TypeCollector(service.namespace);
+  const grouped = collector.groupByNamespace() as Map<string, CollectedTypes>;
+
+  const projectName = serviceNamespaceName;
   const projectPath = path.join(".", projectName);
 
-  // treat all subnamespaces of the service namespace as Python packages.
-  const subnamespaces = [...service.namespace.namespaces.values()];
-  if (subnamespaces.length === 0) {
-    // need to consider if there are top-level models and so on. For now, just error out.
-    throw new Error("No subnamespaces found");
+  // // treat all subnamespaces of the service namespace as Python packages.
+  // const subnamespaces = [...service.namespace.namespaces.values()];
+  // if (subnamespaces.length === 0) {
+  //   // need to consider if there are top-level models and so on. For now, just error out.
+  //   throw new Error("No subnamespaces found");
+  // }
+  // const packages = subnamespaces.map((ns) => createPythonPackage(ns));
+  const packages: PythonPackageModel[] = [];
+  for (const [nsName, types] of grouped.entries()) {
+    const ns = collector.namespaceForName(nsName);
+    if (ns) {
+      packages.push(createPythonPackage(ns, types));
+    }
   }
-  const packages = subnamespaces.map((ns) => createPythonPackage(projectPath, ns));
   return {
     name: projectName,
     path: projectPath,
@@ -59,42 +71,28 @@ function createProjectModel({ program }: EmitContext): PythonProjectModel {
   };
 }
 
-function createPythonPackage(parentPath: string, ns: Namespace): PythonPackageModel {
-  // join parentPath and ns.name
-  const packagePath = path.join(parentPath, ns.name);
-  const subpackages = [...ns.namespaces.values()].map((n) => createPythonPackage(packagePath, n));
+function createPythonPackage(ns: Namespace, data: CollectedTypes): PythonPackageModel {
   const modules: PythonModuleModel[] = [];
-  const models = [...ns.models.values(), ...ns.enums.values()];
+  const models = [...data.models.values(), ...data.enums.values()];
   if (models.length > 0) {
     modules.push({
       name: "models.py",
-      declarations: models,
+      types: models,
     });
   }
-  const operations = [...ns.operations.values()];
+  const operations = [...data.operations.values()];
   if (operations.length > 0) {
     modules.push({
       name: "operations.py",
-      declarations: operations,
+      types: operations,
     });
     modules.push({
       name: "_operations.py",
-      declarations: operations,
+      types: operations,
     });
   }
-  if (modules.length === 0) {
-    throw new Error("No modules found");
-  }
-  // COMMENT: I really want the namer to be able to accept a raw
-  // string and be able to transform it per policy. I tried aquiring
-  // the namer here so I could apply the policy, but that crashed. I
-  // also don't want to force package to accept a Namespace because you
-  // might want some other basis for structuring your Python packages.
-  // FIXME: package name needs to be snake_case
   return {
-    name: ns.name,
-    path: packagePath,
-    subpackages: subpackages,
+    type: ns,
     modules: modules,
   };
 }

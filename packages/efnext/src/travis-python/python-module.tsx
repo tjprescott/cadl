@@ -1,7 +1,6 @@
-import { Type } from "@typespec/compiler";
+import { Enum, Model, Operation } from "@typespec/compiler";
 import { SourceFile } from "../framework/components/index.js";
-
-type Declaration = Type & { name: string };
+import { ClassDeclaration } from "./class-declaration.js";
 
 /**
  * A Python Module is basically a SourceFile which contains declarations. It will
@@ -9,12 +8,23 @@ type Declaration = Type & { name: string };
  */
 export interface PythonModuleModel {
   name: string;
-  declarations: Declaration[];
+  types: (Model | Enum | Operation)[];
 }
-export function PythonModule({ name, declarations }: PythonModuleModel) {
+export function PythonModule({ name, types }: PythonModuleModel) {
+  const typeComponents: any[] = [];
+  for (const item of types) {
+    switch (item.kind) {
+      case "Model":
+        typeComponents.push(<ClassDeclaration type={item} />);
+        break;
+      // TODO: Support enums and operations
+      default:
+        break;
+    }
+  }
   return (
     <SourceFile path={name} filetype="python">
-      {declarations}
+      {typeComponents}
     </SourceFile>
   );
 }
