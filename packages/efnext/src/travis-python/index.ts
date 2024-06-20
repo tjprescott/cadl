@@ -1,5 +1,7 @@
+export * from "./black-formatter.js";
 export * from "./class-declaration.js";
 export * from "./class-variable.js";
+export * from "./function-declaration.js";
 export * from "./init-file.js";
 export * from "./initializer.js";
 export * from "./naming-policy.js";

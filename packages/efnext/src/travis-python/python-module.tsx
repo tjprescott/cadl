@@ -1,6 +1,7 @@
 import { Enum, Model, Operation } from "@typespec/compiler";
 import { SourceFile } from "../framework/components/index.js";
 import { ClassDeclaration } from "./class-declaration.js";
+import { FunctionDeclaration } from "./function-declaration.js";
 
 /**
  * A Python Module is basically a SourceFile which contains declarations. It will
@@ -17,7 +18,12 @@ export function PythonModule({ name, types }: PythonModuleModel) {
       case "Model":
         typeComponents.push(<ClassDeclaration type={item} />);
         break;
-      // TODO: Support enums and operations
+      case "Operation":
+        typeComponents.push(<FunctionDeclaration type={item} />);
+        break;
+      case "Enum":
+        // TODO: Support enums
+        break;
       default:
         break;
     }

@@ -1,6 +1,7 @@
 import { EmitContext, Namespace } from "@typespec/compiler";
 import { EmitOutput, emit } from "@typespec/efnext/framework";
 import {
+  BlackFormatter,
   CollectedTypes,
   PythonModuleModel,
   PythonPackageModel,
@@ -27,7 +28,9 @@ export async function $onEmit(context: EmitContext) {
   await emit(
     context,
     <EmitOutput namePolicy={pythonNamePolicy}>
-      <PythonProject {...projectModel}></PythonProject>
+      <BlackFormatter>
+        <PythonProject {...projectModel}></PythonProject>
+      </BlackFormatter>
     </EmitOutput>
   );
 }
@@ -50,14 +53,12 @@ function createProjectModel({ program }: EmitContext): PythonProjectModel {
   const projectPath = path.join(".", projectName);
 
   // // treat all subnamespaces of the service namespace as Python packages.
-  // const subnamespaces = [...service.namespace.namespaces.values()];
-  // if (subnamespaces.length === 0) {
-  //   // need to consider if there are top-level models and so on. For now, just error out.
-  //   throw new Error("No subnamespaces found");
-  // }
-  // const packages = subnamespaces.map((ns) => createPythonPackage(ns));
   const packages: PythonPackageModel[] = [];
   for (const [nsName, types] of grouped.entries()) {
+    // ignore the service namespace itself
+    if (nsName === serviceNamespaceName) {
+      continue;
+    }
     const ns = collector.namespaceForName(nsName);
     if (ns) {
       packages.push(createPythonPackage(ns, types));

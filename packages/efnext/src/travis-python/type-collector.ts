@@ -52,8 +52,10 @@ export class TypeCollector {
         if (!this.models) {
           this.models = new Set();
         }
-        this.models.add(type);
-        this.#collectFromModel(type);
+        if (!this.models.has(type)) {
+          this.models.add(type);
+          this.#collectFromModel(type);
+        }
         break;
       case "Operation":
         if (!this.operations) {
@@ -115,6 +117,14 @@ export class TypeCollector {
   }
 
   #collectFromModel(type: Model): void {
+    const mapper = type.templateMapper;
+    if (mapper) {
+      for (const arg of mapper.args) {
+        if ((arg as Type).kind) {
+          this.#collectFromType(arg as Type);
+        }
+      }
+    }
     for (const prop of type.properties.values()) {
       this.#collectFromType(prop.type);
     }

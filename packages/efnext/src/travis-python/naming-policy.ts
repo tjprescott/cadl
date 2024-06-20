@@ -61,7 +61,6 @@ export const pythonNamePolicy = createNamePolicy<NameKinds>((type, kind) => {
     case "function":
     case "parameter":
     case "enumMember":
-      return snakeCase(name);
     case "package":
       return snakeCase(name);
     default:

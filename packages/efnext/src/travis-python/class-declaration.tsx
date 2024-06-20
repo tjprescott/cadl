@@ -1,5 +1,5 @@
 import { ComponentChild } from "#jsx/jsx-runtime";
-import { Model, ModelProperty } from "@typespec/compiler";
+import { isTemplateDeclaration, Model, ModelProperty } from "@typespec/compiler";
 import { Declaration } from "../framework/components/index.js";
 import { code } from "../framework/core/index.js";
 import { useNamePolicy } from "../framework/core/name-policy.js";
@@ -19,6 +19,11 @@ export interface ClassDeclarationModel {
 }
 
 export function ClassDeclaration({ type, name, children }: ClassDeclarationModel) {
+  // COMMENT: I would like to not have to do this.
+  if (isTemplateDeclaration(type)) {
+    return undefined;
+  }
+
   // COMMENT: Is there a way for me to create and set the naming policy I want? What does that look like?
   const namer = useNamePolicy();
   // COMMENT: It's kind of annoying that I have to "just know" these kind values. I've had plenty of crashes due
@@ -54,7 +59,7 @@ export function ClassDeclaration({ type, name, children }: ClassDeclarationModel
     },
     "\n"
   );
-  const initializerComponents = <Initializer type={instanceProperties} />;
+  const initializerComponents = <Initializer type={[...instanceProperties, ...classProperties]} />;
 
   // TODO: Implement these
   const methodComponents = undefined;
